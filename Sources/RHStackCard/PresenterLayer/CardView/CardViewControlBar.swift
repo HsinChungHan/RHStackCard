@@ -7,11 +7,11 @@
 
 import UIKit
 
-protocol CardViewControlBarDelegate: AnyObject {
+public protocol CardViewControlBarDelegate: AnyObject {
     func cardViewControlBar(_ cardViewControlBar: CardViewControlBar, slideAction: CardViewAction)
 }
 
-class CardViewControlBar: UIView {
+public class CardViewControlBar: UIView {
     weak var delegate: CardViewControlBarDelegate?
     
     lazy var controlButtons = makeControlButtons()
@@ -34,10 +34,6 @@ class CardViewControlBar: UIView {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-    
-    override func layoutSubviews() {
-        super.layoutSubviews()
     }
 }
 
@@ -128,7 +124,7 @@ extension CardViewControlBar {
 
 // MARK : - Internal methods
 extension CardViewControlBar {
-    func handleSlideBehaviorLabelAlpha(with slidingEvent: ObservableEvents.CardViewEvents.SlidingEvent) {
+    public func handleSlideBehaviorLabelAlpha(with slidingEvent: ObservableEvents.CardViewEvents.SlidingEvent) {
         let status = slidingEvent.status
         let translation = slidingEvent.translation
         guard let action = slidingEvent.action else { return }

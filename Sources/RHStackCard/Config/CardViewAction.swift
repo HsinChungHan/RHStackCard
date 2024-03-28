@@ -9,7 +9,7 @@
 import RHUIComponent
 import UIKit
 
-enum CardViewAction: Int, CaseIterable {
+public enum CardViewAction: Int, CaseIterable {
     
     case rewind = 0, nope, superLike, like, refresh
     
@@ -56,7 +56,7 @@ enum CardViewAction: Int, CaseIterable {
         }
     }
     
-    var cardViewDirection: SlidingDirection {
+    public var cardViewDirection: SlidingDirection {
         switch self {
         case .like:
             return .toRight

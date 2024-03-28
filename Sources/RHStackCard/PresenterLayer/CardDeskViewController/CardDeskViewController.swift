@@ -7,12 +7,12 @@
 
 import UIKit
 
-protocol CardDeskViewControllerDataSource: AnyObject {
+public protocol CardDeskViewControllerDataSource: AnyObject {
     var cards: [Card] { get }
     var domainURL: URL? { get }
 }
 
-class CardDeskViewController: UIViewController {
+public class CardDeskViewController: UIViewController {
     private lazy var vibrationAnimationController = VibrationAnimationController(dataSource: self, delegate: self)
     
     private lazy var viewModel = CardDeskViewViewModel(domainURL: dataSource?.domainURL)
@@ -45,7 +45,7 @@ class CardDeskViewController: UIViewController {
     
     lazy var tapGestureRecognizer = makeTapGestureRecognizer()
     
-    override func viewDidLoad() {
+    public override func viewDidLoad() {
         super.viewDidLoad()
         view.addGestureRecognizer(tapGestureRecognizer)
         viewModel.addCards(with: _cards)
@@ -73,8 +73,8 @@ extension CardDeskViewController {
         didMove(toParent: superViewController)
     }
     
-    func doAppendNewCardsTask(with cards: [Card]) {
-        addNewCards(with: cards)
+    public func doAppendNewCardsTask(with cards: [Card]) {
+        viewModel.addCards(with: cards)
         taskManager.markCurrentTaskAsFinished()
     }
     
@@ -82,7 +82,7 @@ extension CardDeskViewController {
         currentCardView?.swipe(to: direction)
     }
     
-    func slideTopCardView(with action: @escaping TaskManager.Task) {
+    public func slideTopCardView(with action: @escaping () -> Void) {
         taskManager.addSlideOutAction(action)
     }
     

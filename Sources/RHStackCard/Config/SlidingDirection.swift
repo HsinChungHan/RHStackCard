@@ -6,7 +6,7 @@
 //
 
 import Foundation
-enum SlidingDirection {
+public enum SlidingDirection {
     case toLeft
     case toRight
     case toTop
