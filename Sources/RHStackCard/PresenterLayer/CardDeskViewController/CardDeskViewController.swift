@@ -85,11 +85,6 @@ extension CardDeskViewController {
     public func slideTopCardView(with action: @escaping () -> Void) {
         taskManager.addSlideOutAction(action)
     }
-    
-    // TODO: - Remove in the future
-    func addNewCards(with cards: [Card]) {
-        viewModel.addCards(with: cards)
-    }
 }
 
 extension CardDeskViewController: CardDeskViewViewModelDelegate {
