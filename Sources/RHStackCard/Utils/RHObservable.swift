@@ -7,7 +7,7 @@
 
 import Foundation
 
-class WeakWrapper<T> {
+public class WeakWrapper<T> {
     private weak var _value: AnyObject?
     var value: T? {
         get {
@@ -19,11 +19,11 @@ class WeakWrapper<T> {
     }
 }
 
-protocol RHObserver: AnyObject {
+public protocol RHObserver: AnyObject {
     func update(_ event: Any)
 }
 
-protocol RHObservable: AnyObject {
+public protocol RHObservable: AnyObject {
     var observers: [WeakWrapper<RHObserver>] { get set }
     func addObserver(_ observer: RHObserver)
     func removeObserver(_ observer: RHObserver)
@@ -32,20 +32,20 @@ protocol RHObservable: AnyObject {
 
 // concrete observed class
 extension RHObservable {
-    func addObserver(_ observer: RHObserver) {
+    public func addObserver(_ observer: RHObserver) {
         cleanObservers()
         let weakObserver: WeakWrapper<RHObserver> = .init()
         weakObserver.value = observer
         observers.append(weakObserver)
     }
     
-    func removeObserver(_ observer: RHObserver) {
+    public func removeObserver(_ observer: RHObserver) {
         if let index = observers.firstIndex(where: { $0 === observer }) {
             observers.remove(at: index)
         }
     }
     
-    func notify(with event: Any) {
+    public func notify(with event: Any) {
         cleanObservers()
         observers.forEach {
             let observer = $0.value
@@ -60,7 +60,7 @@ extension RHObservable {
 
 public class ObservableSlidingAnimation: RHObservable {
     public static let shared = ObservableSlidingAnimation.init()
-    var observers: [WeakWrapper<RHObserver>] = []
+    public var observers: [WeakWrapper<RHObserver>] = []
     private init() {}
 }
 
