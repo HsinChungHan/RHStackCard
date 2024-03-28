@@ -102,7 +102,7 @@ extension CardDeskViewController: CardDeskViewViewModelDelegate {
 }
 
 extension CardDeskViewController: CardViewDelegate {
-    func cardView(_ cardView: CardView, didTapOutOfIndex direction: CardViewViewModel.OutOfIndexDirection) {
+    public func cardView(_ cardView: CardView, didTapOutOfIndex direction: CardViewViewModel.OutOfIndexDirection) {
         switch direction {
         case .left:
             ImpactFeedbackController.startImpactFeedback(with: .heavy)
@@ -115,7 +115,7 @@ extension CardDeskViewController: CardViewDelegate {
         }
     }
     
-    func cardView(_ cardView: CardView, didRemoveCardViewFromSuperView: Bool) {
+    public func cardView(_ cardView: CardView, didRemoveCardViewFromSuperView: Bool) {
         if !didRemoveCardViewFromSuperView { return }
         viewModel.popCardView()
     }

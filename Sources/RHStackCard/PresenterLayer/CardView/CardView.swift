@@ -9,32 +9,30 @@ import RHInterface
 import RHUIComponent
 import UIKit
 
-protocol CardViewDelegate: AnyObject {
+public protocol CardViewDelegate: AnyObject {
     func cardView(_ cardView: CardView, didRemoveCardViewFromSuperView: Bool)
     func cardView(_ cardView: CardView, didTapOutOfIndex direction: CardViewViewModel.OutOfIndexDirection)
 }
 
-class CardView: UIView {
+open class CardView: UIView {
     weak var delegate: CardViewDelegate?
     
     private lazy var slidingAnimationController = SlidingAnimationController(dataSource: self, delegate: self)
     private lazy var panGestureRecognizer = makePanGestureRecognizer()
-    
-    private let cardViewWidth = UIScreen.main.bounds.width - 20
-    
+        
     private let viewModel = CardViewViewModel()
     
     var card: Card? { viewModel.card }
     
-    let uid: String
-    init(uid: String) {
+    public let uid: String
+    public init(uid: String) {
         self.uid = uid
         super.init(frame: .zero)
         backgroundColor = .black
         viewModel.delegate = self
     }
     
-    required init?(coder: NSCoder) {
+    required public init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
@@ -48,23 +46,25 @@ class CardView: UIView {
     fileprivate lazy var leftLabel = makeBehaviorLabel(text: CardViewAction.nope.title, color: CardViewAction.nope.color)
     
     let uidLabel = UILabel()
-    // TODO: - 先方便，直接讓外面可以取用。之後要有一個 CardStatus 的狀態，來調整 cardView 上的 label 呈現
-    lazy var rewindLabel = makeBehaviorLabel(text: CardViewAction.rewind.title, color: CardViewAction.rewind.color)
     
-    override func draw(_ rect: CGRect) {
+    override public func draw(_ rect: CGRect) {
         super.draw(rect)
         setupLayout()
         addGestureRecognizer(panGestureRecognizer)
     }
     
-    override var description: String {
+    override public var description: String {
         return "\(super.description) \nuid: \(uid)"
+    }
+    
+    open func setupLayout() {
+        setupViewLayout()
     }
 }
 
 // MARK: - Layouts
-fileprivate extension CardView {
-    func setupLayout() {
+private extension CardView {
+    func setupViewLayout() {
         clipsToBounds = true
         layer.cornerRadius = 20.0
         
@@ -72,12 +72,11 @@ fileprivate extension CardView {
         imageView.fillSuperView()
         layer.addSublayer(gradientLayer)
         gradientLayer.frame = bounds
-        [rightLabel, topLabel, leftLabel, rewindLabel, indexBarStackView].forEach {
+        [rightLabel, topLabel, leftLabel, indexBarStackView].forEach {
             addSubview($0)
         }
         rightLabel.constraint(top: snp.top, bottom: nil, leading: snp.leading, trailing: nil, padding: .init(top: 24, left: 24, bottom: 0, right: 0))
         leftLabel.constraint(top: snp.top, bottom: nil, leading: nil, trailing: snp.trailing, padding: .init(top: 24, left: 0, bottom: 0, right: 24))
-        rewindLabel.constraint(top: snp.top, bottom: nil, leading: nil, trailing: snp.trailing, padding: .init(top: 24, left: 0, bottom: 0, right: 24))
 
         topLabel.constraint(bottom: snp.bottom, centerX: snp.centerX, padding: .init(top: 0, left: 0, bottom: 80, right: 0))
         leftLabel.rotate(degrees: 20)
@@ -85,6 +84,7 @@ fileprivate extension CardView {
         topLabel.rotate(degrees: -20)
         indexBarStackView.constraint(top: snp.top, bottom: nil, leading: snp.leading, trailing: snp.trailing, padding: .init(top: 8, left: 16, bottom: 0, right: 16), size: .init(width: 0, height: 4))
         
+        // TODO: - Remove in the future
         addSubview(uidLabel)
         uidLabel.constraint(centerX: snp.centerX, centerY: snp.centerY, size: .init(width: 100, height: 200))
         uidLabel.text = uid
@@ -155,7 +155,6 @@ fileprivate extension CardView {
         return stackView
     }
     
-    // TODO: - research 看要怎麼做有 angle 的 constraint
     func makeInsetLabel(text: String, textInsets: UIEdgeInsets = .init(top: 0, left: 0, bottom: 0, right: 0) , textAlignment: NSTextAlignment = .center, textColor: UIColor = .black, font: UIFont = .systemFont(ofSize: 20), numberOfLines: Int = 1) -> InsetLabel{
         let label = InsetLabel(textInsets: textInsets)
         label.text = text
@@ -255,12 +254,12 @@ extension CardView: SlidingAnimationControllerDelegate {
 
 // MARK: - CardViewViewModelDelegate
 extension CardView: CardViewViewModelDelegate {
-    func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didResetCardView: Bool) {
+    public func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didResetCardView: Bool) {
         guard didResetCardView else { return }
         indexBarStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
     }
     
-    func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didSlideDirection direction: SlidingDirection, withLabelAlpha alpha: CGFloat) {
+    public func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didSlideDirection direction: SlidingDirection, withLabelAlpha alpha: CGFloat) {
         switch direction {
         case .toTop:
             topLabel.alpha = alpha
@@ -283,18 +282,16 @@ extension CardView: CardViewViewModelDelegate {
             leftLabel.alpha = 0.0
         }
     }
-    func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didUpdateImages images: [UIImage]) {
-        
-    }
-    func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didInitImages images: [UIImage]) {
+    
+    public func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didInitImages images: [UIImage]) {
         initIndexBar(with: images.count)
     }
     
-    func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didTapOutOfIndex direction: CardViewViewModel.OutOfIndexDirection) {
+    public func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didTapOutOfIndex direction: CardViewViewModel.OutOfIndexDirection) {
         delegate?.cardView(self, didTapOutOfIndex: direction)
     }
     
-    func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didUpdateCurrentImage image: UIImage, withCurrentImageIndex index: Int) {
+    public func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didUpdateCurrentImage image: UIImage, withCurrentImageIndex index: Int) {
         imageView.image = image
         updateIndexBar(with: index)
     }

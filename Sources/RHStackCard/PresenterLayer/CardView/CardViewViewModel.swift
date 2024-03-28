@@ -7,18 +7,17 @@
 
 import UIKit
 
-protocol CardViewViewModelDelegate: AnyObject {
+public protocol CardViewViewModelDelegate: AnyObject {
     func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didTapOutOfIndex direction: CardViewViewModel.OutOfIndexDirection)
     func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didUpdateCurrentImage image: UIImage, withCurrentImageIndex index: Int)
     func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didInitImages images: [UIImage])
-    func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didUpdateImages images: [UIImage])
     
     func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didSlideDirection direction: SlidingDirection, withLabelAlpha alpha: CGFloat)
     
     func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didResetCardView: Bool)
 }
 
-class CardViewViewModel {
+open class CardViewViewModel {
     weak var delegate: CardViewViewModelDelegate?
     var card: Card? = nil
     var currentImageIndex: Int? = nil {
@@ -36,7 +35,7 @@ class CardViewViewModel {
 
 // MARK: - Internal Methods
 extension CardViewViewModel {
-    enum OutOfIndexDirection {
+    public enum OutOfIndexDirection {
         case left
         case right
         case stillIncludeIndex
