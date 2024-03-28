@@ -9,9 +9,9 @@ import Foundation
 
 public struct Card: Equatable {
     public let uid: String
-    public var imageNames: [String] = []
-    public var imageURLs: [URL] = []
-    public init(uid: String, imageNames: [String], imageURLs: [URL]) {
+    public let imageNames: [String]
+    public let imageURLs: [URL]
+    public init(uid: String, imageNames: [String] = [], imageURLs: [URL] = []) {
         self.uid = uid
         self.imageNames = imageNames
         self.imageURLs = imageURLs
