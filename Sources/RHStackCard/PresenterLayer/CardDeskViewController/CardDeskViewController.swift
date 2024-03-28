@@ -68,7 +68,7 @@ fileprivate extension CardDeskViewController {
 
 // MARK: - Internal Methods
 extension CardDeskViewController {
-    func addInSuperViewController(with superViewController: UIViewController) {
+    public func addInSuperViewController(with superViewController: UIViewController) {
         superViewController.addChild(self)
         didMove(toParent: superViewController)
     }
@@ -78,7 +78,7 @@ extension CardDeskViewController {
         taskManager.markCurrentTaskAsFinished()
     }
     
-    func doSwipeCardViewTask(with direction: SlidingDirection) {
+    public func doSwipeCardViewTask(with direction: SlidingDirection) {
         currentCardView?.swipe(to: direction)
     }
     
