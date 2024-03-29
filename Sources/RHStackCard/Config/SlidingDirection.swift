@@ -19,7 +19,7 @@ public enum SlidingDirection {
         }
     }
     
-    static func getSwipeAwayDirection(with translation: CGPoint) -> Self {
+    public static func getSwipeAwayDirection(with translation: CGPoint) -> Self {
         let translationXDirection = translation.x
         let translationYDirection = translation.y
         
@@ -31,7 +31,7 @@ public enum SlidingDirection {
         return .backToIdentity
     }
     
-    static func getSlideDirection(with translation: CGPoint) -> Self {
+    public static func getSlideDirection(with translation: CGPoint) -> Self {
         let translationXDirection = translation.x
         let translationYDirection = translation.y
         if translationYDirection < -15  && abs(translationXDirection) < 100 { return .toTop }

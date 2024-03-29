@@ -73,15 +73,13 @@ public struct ObservableEvents {
         }
         
         public struct SlidingEvent {
-            typealias CardViewDirection = SlidingDirection
-            
-            let status: CardViewEvents.Status
-            let translation: CGPoint
-            var direction: CardViewDirection {
-                CardViewDirection.getSlideDirection(with: translation)
+            public let status: CardViewEvents.Status
+            public let translation: CGPoint
+            public var direction: SlidingDirection {
+                .getSlideDirection(with: translation)
             }
-            var action: CardViewAction? {
-                CardViewAction.getAction(by: direction)
+            public var action: CardViewAction? {
+                .getAction(by: direction)
             }
         }
     }
