@@ -16,6 +16,8 @@ public class CardDeskViewController: UIViewController {
     private lazy var vibrationAnimationController = VibrationAnimationController(dataSource: self, delegate: self)
     
     private lazy var viewModel = CardDeskViewViewModel(domainURL: dataSource?.domainURL)
+    private lazy var slidingEventObserver = SlidingEventObserver()
+    private lazy var cardViewControlBar = makeCardViewControlBar(with: self)
     
     var currentCardView: CardView? {
         guard let currentCardView = viewModel.currentCardView else {
@@ -50,6 +52,7 @@ public class CardDeskViewController: UIViewController {
         registerCardViewType()
         view.addGestureRecognizer(tapGestureRecognizer)
         viewModel.addCards(with: _cards)
+        setupLayout()
     }
     
     public func registerCardViewType(withCardViewID cardViewID: String, cardViewType: CardView.Type) {
@@ -58,6 +61,22 @@ public class CardDeskViewController: UIViewController {
     
     private func registerCardViewType() {
         registerCardViewType(withCardViewID: "BasicCardView", cardViewType: BasicCardView.self)
+    }
+    
+    private func addObserver(with slidingEventObserver: SlidingEventObserver) {
+        ObservableSlidingAnimation.shared.addObserver(slidingEventObserver)
+    }
+    
+    private func bindEvent() {
+        slidingEventObserver.didUpdateValue = { [weak self] event in
+            guard let self else { return }
+            self.cardViewControlBar.handleSlideBehaviorLabelAlpha(with: event)
+        }
+    }
+    
+    private func setupLayout() {
+        view.addSubview(cardViewControlBar)
+        cardViewControlBar.constraint(bottom: view.snp.bottom, centerX: view.snp.centerX, padding: .init(top: 0, left: 0, bottom: 16, right: 0))
     }
 }
 
@@ -72,6 +91,12 @@ fileprivate extension CardDeskViewController {
         let tapLocation = gesture.location(in: view)
         let shouldAdvanceNextPhoto = tapLocation.x > view.frame.midX ? true : false
         currentCardView?.setCurrentPhotoIndex(shouldAdvanceNextPhoto: shouldAdvanceNextPhoto)
+    }
+    
+    func makeCardViewControlBar(with delegate: CardViewControlBarDelegate) -> CardViewControlBar {
+        let bar = CardViewControlBar(buttonsShouldHaveInitialColor: false)
+        bar.delegate = delegate
+        return bar
     }
 }
 
@@ -138,5 +163,21 @@ extension CardDeskViewController: VibrationAnimationControllerDataSource {
 // MARK: - VibrationAnimationControllerDelegate
 extension CardDeskViewController: VibrationAnimationControllerDelegate {
     func vibrationAnimationController(_ vibrationAnimationController: VibrationAnimationController, didEndVibrationAnimation: Bool) {
+    }
+}
+
+extension CardDeskViewController: CardViewControlBarDelegate {
+    public func cardViewControlBar(_ cardViewControlBar: CardViewControlBar, slideAction: CardViewAction) {
+        let action = { [weak self] in
+            guard let self else { return }
+            let cardViewDirection = slideAction.cardViewDirection
+            if cardViewDirection == .backToIdentity {
+                let newCards = _cards
+                doAppendNewCardsTask(with: newCards)
+                return
+            }
+            doSwipeCardViewTask(with: cardViewDirection)
+        }
+        slideTopCardView(with: action)
     }
 }
