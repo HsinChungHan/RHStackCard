@@ -14,13 +14,13 @@ public enum CardViewType {
     var viewType: CardView.Type {
         switch self {
         case .basicCardView:
-            return CardView.self
+            return BasicCardView.self
         }
     }
     
     static func type(of cardView: CardView) -> CardViewType? {
         switch cardView {
-        case is CardView:
+        case is BasicCardView:
             return .basicCardView
             // 如果有更多的CardView子類型，可以在這裡添加更多的case分支
         default:
