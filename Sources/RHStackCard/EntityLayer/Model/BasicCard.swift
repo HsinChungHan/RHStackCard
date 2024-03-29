@@ -6,14 +6,14 @@
 //
 
 import Foundation
-public protocol CardProtocol {
+public protocol Card {
     var uid: String { get }
     var cardViewType: CardViewType { get }
     var imageNames: [String] { get }
     var imageURLs: [URL] { get }
 }
 
-public struct BasicCard: CardProtocol {
+public struct BasicCard: Card {
     public let cardViewType: CardViewType = .basicCardView
     public let uid: String
     public let imageNames: [String]

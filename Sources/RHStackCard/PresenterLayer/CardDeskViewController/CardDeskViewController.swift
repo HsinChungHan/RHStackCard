@@ -8,7 +8,7 @@
 import UIKit
 
 public protocol CardDeskViewControllerDataSource: AnyObject {
-    var cards: [BasicCard] { get }
+    var cards: [Card] { get }
     var domainURL: URL? { get }
 }
 
@@ -27,7 +27,7 @@ public class CardDeskViewController: UIViewController {
     
     let taskManager = TaskManager()
     
-    private var _cards: [BasicCard] {
+    private var _cards: [Card] {
         guard let dataSource else { return [] }
         return dataSource.cards
     }
@@ -73,7 +73,7 @@ extension CardDeskViewController {
         didMove(toParent: superViewController)
     }
     
-    public func doAppendNewCardsTask(with cards: [BasicCard]) {
+    public func doAppendNewCardsTask(with cards: [Card]) {
         viewModel.addCards(with: cards)
         taskManager.markCurrentTaskAsFinished()
     }

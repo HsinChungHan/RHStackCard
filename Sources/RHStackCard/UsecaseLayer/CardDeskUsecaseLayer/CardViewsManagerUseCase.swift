@@ -9,30 +9,27 @@ import Foundation
 
 protocol CardViewsManagerUseCaseProtocol: AnyObject {
     func popCardView()
-    func addNewCards(with cards: [BasicCard])
-    func updateCardURLImages<T: CardProtocol>(with imageData: Data, at index: Int, for card: T)
+    func addNewCards(with cards: [Card])
+    func updateCardURLImages(with imageData: Data, at index: Int, for card: Card)
     
     var delegate: CardViewsManagerUseCaseDelegate? { get set }
     var presentingCardViews: [CardView] { get set }
 }
 
 protocol CardViewsManagerUseCaseDelegate: AnyObject {
-    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, withAddedCards cards: [BasicCard])
+    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, withAddedCards cards: [Card])
     
-    func cardViewsManager<T: CardProtocol>(_ cardViewsManager: CardViewsManagerUseCase, didDistributeCardView: Bool, cardView: CardView, card: T)
+    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didDistributeCardView: Bool, cardView: CardView, card: Card)
 
     func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didGenerateAllCards: Bool)
 }
 
 class CardViewsManagerUseCase: NSObject, CardViewsManagerUseCaseProtocol {
-    
-    
-    
     enum CardImageSourceType {
         case fromAsset
         case fromURL
         
-        static func getType<T: CardProtocol>(with card: T) -> Self {
+        static func getType<T: Card>(with card: T) -> Self {
             return card.imageNames.isEmpty ? .fromURL : .fromAsset
         }
     }
@@ -45,9 +42,9 @@ class CardViewsManagerUseCase: NSObject, CardViewsManagerUseCaseProtocol {
 //        .init(uid: "2")
 //    ]
     
-    var cards = [any CardProtocol]()
-    lazy var presentingCards = [any CardProtocol]()
-    var popedCards = [any CardProtocol]()
+    var cards = [any Card]()
+    lazy var presentingCards = [any Card]()
+    var popedCards = [any Card]()
     
     weak var _delegate: CardViewsManagerUseCaseDelegate?
     var delegate: CardViewsManagerUseCaseDelegate? {
@@ -59,7 +56,7 @@ class CardViewsManagerUseCase: NSObject, CardViewsManagerUseCaseProtocol {
         self.delegate = delegate
     }
     
-    func updateCardURLImages<T>(with imageData: Data, at index: Int, for card: T) where T : CardProtocol {
+    func updateCardURLImages(with imageData: Data, at index: Int, for card: Card) {
         self.presentingCardViews.forEach {
             if $0.card?.uid == card.uid {
                 $0.updateCardImage(with: imageData, at: index)
@@ -67,7 +64,7 @@ class CardViewsManagerUseCase: NSObject, CardViewsManagerUseCaseProtocol {
         }
     }
     
-    func addNewCards(with cards: [BasicCard]) {
+    func addNewCards(with cards: [Card]) {
         initCardViewsPool(with: cards)
         self.cards += cards
         distributeCardView()
@@ -75,7 +72,7 @@ class CardViewsManagerUseCase: NSObject, CardViewsManagerUseCaseProtocol {
     }
     
     var myCardViewsPool = [CardViewType: [CardView]]()
-    private func initCardViewsPool(with cards: [BasicCard]) {
+    private func initCardViewsPool(with cards: [Card]) {
         var cardViewTypes = Set<CardViewType>()
         cards.forEach {
             cardViewTypes.insert($0.cardViewType)
@@ -118,7 +115,7 @@ class CardViewsManagerUseCase: NSObject, CardViewsManagerUseCaseProtocol {
         distributeCardView()
     }
     
-    private func setupCardView<T: CardProtocol>(with card: T, on cardView: CardView) {
+    private func setupCardView(with card: Card, on cardView: CardView) {
         switch CardImageSourceType.getType(with: card) {
         case .fromAsset:
             cardView.setupImageNamesCard(with: card)
