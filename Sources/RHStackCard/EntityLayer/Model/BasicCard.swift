@@ -14,7 +14,7 @@ public protocol Card {
 }
 
 public struct BasicCard: Card {
-    public let cardViewTypeName: String =  String(describing: type(of: BasicCardView.self))
+    public let cardViewTypeName: String = "BasicCardView"
     public let uid: String
     public let imageNames: [String]
     public let imageURLs: [URL]

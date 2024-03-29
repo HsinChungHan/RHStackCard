@@ -47,8 +47,17 @@ public class CardDeskViewController: UIViewController {
     
     public override func viewDidLoad() {
         super.viewDidLoad()
+        registerCardViewType()
         view.addGestureRecognizer(tapGestureRecognizer)
         viewModel.addCards(with: _cards)
+    }
+    
+    public func registerCardViewType(withCardViewID cardViewID: String, cardViewType: CardView.Type) {
+        CardViewTypeManager.register(withCardViewID: cardViewID, cardViewType: cardViewType)
+    }
+    
+    private func registerCardViewType() {
+        registerCardViewType(withCardViewID: "BasicCardView", cardViewType: BasicCardView.self)
     }
 }
 
