@@ -6,17 +6,11 @@
 //
 
 import Foundation
-public protocol CardProtocol: Equatable {
+public protocol CardProtocol {
     var uid: String { get }
     var cardViewType: CardViewType { get }
     var imageNames: [String] { get }
     var imageURLs: [URL] { get }
-}
-
-extension CardProtocol {
-    static public func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.uid == rhs.uid
-    }
 }
 
 public struct BasicCard: CardProtocol {
