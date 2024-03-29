@@ -45,7 +45,7 @@ open class CardView: UIView {
     fileprivate lazy var topLabel = makeBehaviorLabel(text: CardViewAction.superLike.title, color: CardViewAction.superLike.color)
     fileprivate lazy var leftLabel = makeBehaviorLabel(text: CardViewAction.nope.title, color: CardViewAction.nope.color)
     
-    let uidLabel = UILabel()
+    public lazy var uidLabel = makeUIDLabel()
     
     override public func draw(_ rect: CGRect) {
         super.draw(rect)
@@ -84,12 +84,8 @@ private extension CardView {
         topLabel.rotate(degrees: -20)
         indexBarStackView.constraint(top: snp.top, bottom: nil, leading: snp.leading, trailing: snp.trailing, padding: .init(top: 8, left: 16, bottom: 0, right: 16), size: .init(width: 0, height: 4))
         
-        // TODO: - Remove in the future
         addSubview(uidLabel)
         uidLabel.constraint(centerX: snp.centerX, centerY: snp.centerY, size: .init(width: 100, height: 200))
-        uidLabel.text = uid
-        uidLabel.textColor = .white
-        uidLabel.font = .boldSystemFont(ofSize: 33)
     }
     
     func initIndexBar(with counts: Int) {
@@ -123,6 +119,14 @@ fileprivate extension CardView {
         view.clipsToBounds = true
         view.contentMode = .scaleAspectFill
         return view
+    }
+    
+    func makeUIDLabel() -> UILabel {
+        let label = UILabel()
+        label.text = uid
+        label.textColor = .white
+        label.font = .boldSystemFont(ofSize: 33)
+        return label
     }
     
     func makeInformationLabel() -> UILabel {
