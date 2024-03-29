@@ -49,7 +49,7 @@ extension CardDeskViewViewModel {
 
 // MARK: - Private Helpers
 private extension CardDeskViewViewModel {
-    // 只有那些圖片是要用 URL 抓的，才會經由 ImageRepository 提供圖片
+    // 只有需要用 URL 抓的圖片才會經由 ImageRepository 提供圖片
     // 否則直接由 cardViewsManager 要求 cardView render asset 圖片
     func loadImages(with cards: [Card]) {
         cards.forEach { card in

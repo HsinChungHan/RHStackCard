@@ -9,6 +9,16 @@ import RHInterface
 import RHUIComponent
 import UIKit
 
+enum CardViewType {
+    case basicImageViewCard
+    var viewType: CardView.Type {
+        switch self {
+        case .basicImageViewCard:
+            return CardView.self
+        }
+    }
+}
+
 public protocol CardViewDelegate: AnyObject {
     func cardView(_ cardView: CardView, didRemoveCardViewFromSuperView: Bool)
     func cardView(_ cardView: CardView, didTapOutOfIndex direction: CardViewViewModel.OutOfIndexDirection)
@@ -20,11 +30,12 @@ open class CardView: UIView {
     private lazy var slidingAnimationController = SlidingAnimationController(dataSource: self, delegate: self)
     private lazy var panGestureRecognizer = makePanGestureRecognizer()
         
-    private let viewModel = CardViewViewModel()
+    
     
     var card: Card? { viewModel.card }
     
     public let uid: String
+    public let viewModel = CardViewViewModel()
     public init(uid: String) {
         self.uid = uid
         super.init(frame: .zero)

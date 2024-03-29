@@ -93,12 +93,6 @@ extension CardViewViewModel {
         currentImageIndex = (images!.isEmpty) ? nil : 0
     }
     
-    func updateImages(with names: [String]) {
-        let images = names.compactMap { UIImage.init(named: $0) }
-        self.images = images
-    }
-    
-    
     func setupImageURLsCard(with card: Card) {
         self.card = card
         let imagesCount = max(card.imageNames.count, card.imageURLs.count)
@@ -113,5 +107,10 @@ extension CardViewViewModel {
         if index == currentImageIndex {
             delegate?.cardViewViewModel(self, didUpdateCurrentImage: image, withCurrentImageIndex: currentImageIndex!)
         }
+    }
+    
+    func updateImages(with names: [String]) {
+        let images = names.compactMap { UIImage.init(named: $0) }
+        self.images = images
     }
 }
