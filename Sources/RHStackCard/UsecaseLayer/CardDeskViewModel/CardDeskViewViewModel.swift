@@ -57,7 +57,7 @@ private extension CardDeskViewViewModel {
         }
     }
     
-    func loadImage(with card: BasicCard) {
+    func loadImage<T: CardProtocol>(with card: T) {
         guard !card.imageURLs.isEmpty else { return }
         
         loadCardImagesUseCase.loadCardImages(with: card) { [weak self] result in
@@ -73,13 +73,13 @@ private extension CardDeskViewViewModel {
 }
 
 extension CardDeskViewViewModel: CardViewsManagerUseCaseDelegate {
-    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, withAddedCards cards: [BasicCard]) {
-        loadImages(with: cards)
-    }
-    
-    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didDistributeCardView: Bool, cardView: CardView, card: BasicCard) {
+    func cardViewsManager<T>(_ cardViewsManager: CardViewsManagerUseCase, didDistributeCardView: Bool, cardView: CardView, card: T) where T : CardProtocol {
         loadImage(with: card)
         delegate?.cardDeskViewViewModel(self, didDistributeCardView: cardView)
+    }
+    
+    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, withAddedCards cards: [BasicCard]) {
+        loadImages(with: cards)
     }
     
     func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didGenerateAllCards: Bool) {

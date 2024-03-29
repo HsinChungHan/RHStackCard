@@ -19,7 +19,7 @@ class LoadCardImagesUseCase: LoadCardImagesUseCaseProtocol {
         self.imageRepository = imageRepository
     }
     
-    func loadCardImages(with card: BasicCard, completion: @escaping (Result<(Int, Data), Error>) -> Void) {
+    func loadCardImages<T: CardProtocol>(with card: T, completion: @escaping (Result<(Int, Data), Error>) -> Void) {
         for (index, url) in card.imageURLs.enumerated() {
             loadImageCurrencyQueue.addOperation { [weak self] in
                 guard let self else { return }
