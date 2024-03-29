@@ -9,12 +9,22 @@ import RHInterface
 import RHUIComponent
 import UIKit
 
-enum CardViewType {
-    case basicImageViewCard
+public enum CardViewType {
+    case basicCardView
     var viewType: CardView.Type {
         switch self {
-        case .basicImageViewCard:
+        case .basicCardView:
             return CardView.self
+        }
+    }
+    
+    static func type(of cardView: CardView) -> CardViewType? {
+        switch cardView {
+        case is CardView:
+            return .basicCardView
+            // 如果有更多的CardView子類型，可以在這裡添加更多的case分支
+        default:
+            return nil
         }
     }
 }
@@ -34,7 +44,8 @@ open class CardView: UIView {
     
     public let uid: String
     public let viewModel = CardViewViewModel()
-    public init(uid: String) {
+
+    public required init(uid: String) {
         self.uid = uid
         super.init(frame: .zero)
         backgroundColor = .black
