@@ -8,13 +8,13 @@
 import Foundation
 public protocol Card {
     var uid: String { get }
-    var cardViewType: CardViewType { get }
+    var cardViewTypeName: String { get }
     var imageNames: [String] { get }
     var imageURLs: [URL] { get }
 }
 
 public struct BasicCard: Card {
-    public let cardViewType: CardViewType = .basicCardView
+    public let cardViewTypeName: String =  String(describing: type(of: BasicCardView.self))
     public let uid: String
     public let imageNames: [String]
     public let imageURLs: [URL]

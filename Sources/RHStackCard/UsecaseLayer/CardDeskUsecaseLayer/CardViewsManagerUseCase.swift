@@ -36,11 +36,7 @@ class CardViewsManagerUseCase: NSObject, CardViewsManagerUseCaseProtocol {
     
     let MAX_PRESENTATION_CARDS = 3
     var presentingCardViews = [CardView]()
-//    var cardViewsPool: [CardView] = [
-//        .init(uid: "0"),
-//        .init(uid: "1"),
-//        .init(uid: "2")
-//    ]
+    var cardViewsPool = [String: [CardView]]()
     
     var cards = [any Card]()
     lazy var presentingCards = [any Card]()
@@ -71,18 +67,18 @@ class CardViewsManagerUseCase: NSObject, CardViewsManagerUseCaseProtocol {
         delegate?.cardViewsManager(self, withAddedCards: cards)
     }
     
-    var myCardViewsPool = [CardViewType: [CardView]]()
     private func initCardViewsPool(with cards: [Card]) {
-        var cardViewTypes = Set<CardViewType>()
+        var cardViewTypeNames = Set<String>()
         cards.forEach {
-            cardViewTypes.insert($0.cardViewType)
+            let typeName = String(describing: $0.cardViewTypeName)
+            cardViewTypeNames.insert(typeName)
         }
         
-        for cardViewType in cardViewTypes {
-            myCardViewsPool[cardViewType] = [
-                cardViewType.viewType.init(uid: "0"),
-                cardViewType.viewType.init(uid: "1"),
-                cardViewType.viewType.init(uid: "2"),
+        for cardViewTypeName in cardViewTypeNames {
+            cardViewsPool[cardViewTypeName] = [
+                CardViewTypeManager.type(ofTypeName: cardViewTypeName)!.init(uid: "0"),
+                CardViewTypeManager.type(ofTypeName: cardViewTypeName)!.init(uid: "1"),
+                CardViewTypeManager.type(ofTypeName: cardViewTypeName)!.init(uid: "2"),
             ]
         }
     }
@@ -90,8 +86,8 @@ class CardViewsManagerUseCase: NSObject, CardViewsManagerUseCaseProtocol {
     private func distributeCardView() {
         while !cards.isEmpty && presentingCardViews.count < MAX_PRESENTATION_CARDS {
             let targetCard = cards.removeFirst()
-            let targetCardViewType = targetCard.cardViewType
-            let targetCardView = myCardViewsPool[targetCardViewType]!.removeFirst()
+            let targetCardViewType = targetCard.cardViewTypeName
+            let targetCardView = cardViewsPool[targetCardViewType]!.removeFirst()
             
             setupCardView(with: targetCard, on: targetCardView)
             presentingCardViews.append(targetCardView)
@@ -103,9 +99,8 @@ class CardViewsManagerUseCase: NSObject, CardViewsManagerUseCaseProtocol {
     func popCardView() {
         let popedCardView = presentingCardViews.removeFirst()
         popedCardView.reset()
-        let popedCardViewType = CardViewType.type(of: popedCardView)!
-        myCardViewsPool[popedCardViewType]!.append(popedCardView)
-//        cardViewsPool.append(popedCardView)
+        let popedCardViewTypeName = String(describing: CardViewTypeManager.type(ofCardView: popedCardView)!)
+        cardViewsPool[popedCardViewTypeName]!.append(popedCardView)
         let popedCard = presentingCards.removeFirst()
         popedCards.append(popedCard)
         if cards.isEmpty {

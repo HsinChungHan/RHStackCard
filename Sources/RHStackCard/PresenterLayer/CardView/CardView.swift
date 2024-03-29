@@ -9,26 +9,6 @@ import RHInterface
 import RHUIComponent
 import UIKit
 
-public enum CardViewType {
-    case basicCardView
-    var viewType: CardView.Type {
-        switch self {
-        case .basicCardView:
-            return BasicCardView.self
-        }
-    }
-    
-    static func type(of cardView: CardView) -> CardViewType? {
-        switch cardView {
-        case is BasicCardView:
-            return .basicCardView
-            // 如果有更多的CardView子類型，可以在這裡添加更多的case分支
-        default:
-            return nil
-        }
-    }
-}
-
 public protocol CardViewDelegate: AnyObject {
     func cardView(_ cardView: CardView, didRemoveCardViewFromSuperView: Bool)
     func cardView(_ cardView: CardView, didTapOutOfIndex direction: CardViewViewModel.OutOfIndexDirection)
@@ -40,7 +20,7 @@ open class CardView: UIView {
     private lazy var slidingAnimationController = SlidingAnimationController(dataSource: self, delegate: self)
     private lazy var panGestureRecognizer = makePanGestureRecognizer()
         
-    var card: (any Card)? { viewModel.card }
+    public var card: (any Card)? { viewModel.card }
     
     public let uid: String
     public let viewModel = CardViewViewModel()
