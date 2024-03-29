@@ -30,9 +30,7 @@ open class CardView: UIView {
     private lazy var slidingAnimationController = SlidingAnimationController(dataSource: self, delegate: self)
     private lazy var panGestureRecognizer = makePanGestureRecognizer()
         
-    
-    
-    var card: Card? { viewModel.card }
+    var card: BasicCard? { viewModel.card }
     
     public let uid: String
     public let viewModel = CardViewViewModel()
@@ -219,7 +217,7 @@ extension CardView {
         viewModel.setCurrentPhotoIndex(shouldAdvanceNextPhoto: shouldAdvanceNextPhoto)
     }
     
-    func setupImageNamesCard(with card: Card) {
+    func setupImageNamesCard(with card: BasicCard) {
         viewModel.setupImageNamesCard(with: card)
     }
     
@@ -227,7 +225,7 @@ extension CardView {
         viewModel.reset()
     }
     
-    func setupImageURLsCard(with card: Card) {
+    func setupImageURLsCard(with card: BasicCard) {
         viewModel.setupImageURLsCard(with: card)
     }
     

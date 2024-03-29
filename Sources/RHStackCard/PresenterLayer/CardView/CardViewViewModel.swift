@@ -19,7 +19,7 @@ public protocol CardViewViewModelDelegate: AnyObject {
 
 open class CardViewViewModel {
     weak var delegate: CardViewViewModelDelegate?
-    var card: Card? = nil
+    var card: BasicCard? = nil
     var currentImageIndex: Int? = nil {
         didSet {
             guard
@@ -86,14 +86,14 @@ extension CardViewViewModel {
         delegate?.cardViewViewModel(self, didResetCardView: true)
     }
     
-    func setupImageNamesCard(with card: Card) {
+    func setupImageNamesCard(with card: BasicCard) {
         self.card = card
         self.images = card.imageNames.compactMap { UIImage.init(named: $0) }
         delegate?.cardViewViewModel(self, didInitImages: images!)
         currentImageIndex = (images!.isEmpty) ? nil : 0
     }
     
-    func setupImageURLsCard(with card: Card) {
+    func setupImageURLsCard(with card: BasicCard) {
         self.card = card
         let imagesCount = max(card.imageNames.count, card.imageURLs.count)
         images = Array(repeating: UIImage(), count: imagesCount)

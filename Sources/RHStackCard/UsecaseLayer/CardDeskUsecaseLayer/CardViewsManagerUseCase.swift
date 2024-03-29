@@ -44,7 +44,9 @@ class CardViewsManagerUseCase: NSObject, CardViewsManagerUseCaseProtocol {
     
     var cards = [Card]()
     lazy var presentingCards = [Card]()
-    var popedCards = [Card]()
+    var cards = [BasicCard]()
+    lazy var presentingCards = [BasicCard]()
+    var popedCards = [BasicCard]()
     
     weak var _delegate: CardViewsManagerUseCaseDelegate?
     var delegate: CardViewsManagerUseCaseDelegate? {
@@ -70,6 +72,7 @@ class CardViewsManagerUseCase: NSObject, CardViewsManagerUseCaseProtocol {
     }
     
     func updateCardURLImages(with imageData: Data, at index: Int, for card: Card) {
+    func updateCardURLImages(with imageData: Data, at index: Int, for card: BasicCard) {
         self.presentingCardViews.forEach {
             if $0.card == card {
                 $0.updateCardImage(with: imageData, at: index)
@@ -106,6 +109,7 @@ class CardViewsManagerUseCase: NSObject, CardViewsManagerUseCaseProtocol {
     }
     
     private func setupCardView(with card: Card, on cardView: CardView) {
+    private func setupCardView(with card: BasicCard, on cardView: CardView) {
         switch CardImageSourceType.getType(with: card) {
         case .fromAsset:
             cardView.setupImageNamesCard(with: card)

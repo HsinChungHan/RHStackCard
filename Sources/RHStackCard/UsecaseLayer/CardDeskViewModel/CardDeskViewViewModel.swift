@@ -38,7 +38,7 @@ extension CardDeskViewViewModel {
 
 // MARK: - Internal Methods
 extension CardDeskViewViewModel {
-    func addCards(with cards: [Card]) {
+    func addCards(with cards: [BasicCard]) {
         cardViewsManager.addNewCards(with: cards)
     }
     
@@ -51,13 +51,13 @@ extension CardDeskViewViewModel {
 private extension CardDeskViewViewModel {
     // 只有需要用 URL 抓的圖片才會經由 ImageRepository 提供圖片
     // 否則直接由 cardViewsManager 要求 cardView render asset 圖片
-    func loadImages(with cards: [Card]) {
+    func loadImages(with cards: [BasicCard]) {
         cards.forEach { card in
             loadImage(with: card)
         }
     }
     
-    func loadImage(with card: Card) {
+    func loadImage(with card: BasicCard) {
         guard !card.imageURLs.isEmpty else { return }
         
         loadCardImagesUseCase.loadCardImages(with: card) { [weak self] result in
@@ -73,11 +73,11 @@ private extension CardDeskViewViewModel {
 }
 
 extension CardDeskViewViewModel: CardViewsManagerUseCaseDelegate {
-    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, withAddedCards cards: [Card]) {
+    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, withAddedCards cards: [BasicCard]) {
         loadImages(with: cards)
     }
     
-    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didDistributeCardView: Bool, cardView: CardView, card: Card) {
+    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didDistributeCardView: Bool, cardView: CardView, card: BasicCard) {
         loadImage(with: card)
         delegate?.cardDeskViewViewModel(self, didDistributeCardView: cardView)
     }
