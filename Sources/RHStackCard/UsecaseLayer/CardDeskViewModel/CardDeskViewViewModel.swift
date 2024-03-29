@@ -15,13 +15,56 @@ protocol CardDeskViewViewModelDelegate: AnyObject {
 class CardDeskViewViewModel {
     weak var delegate: CardDeskViewViewModelDelegate?
     private lazy var cardViewsManager = CardViewsManagerUseCase.init(delegate: self)
+    let cardViewsAnimationManager = CardViewsAnimationManagerUseCase()
     
     private lazy var imageRepository = ImageRepository.init(imageNetworkService: ImageNetworkService(domainURL: domainURL), imageStoreService: ImageStoreService())
     private lazy var loadCardImagesUseCase: LoadCardImagesUseCase = LoadCardImagesUseCase(imageRepository: imageRepository)
     
+    private lazy var slidingEventObserver = SlidingEventObserver()
     let domainURL: URL?
     init(domainURL: URL?) {
         self.domainURL = domainURL
+        addObserver(with: slidingEventObserver)
+        bindEvent()
+    }
+    
+    private func addObserver(with slidingEventObserver: SlidingEventObserver) {
+        ObservableSlidingAnimation.shared.addObserver(slidingEventObserver)
+    }
+    
+    private func bindEvent() {
+        slidingEventObserver.didUpdateValue = { [weak self] event in
+            guard let self else { return }
+            let status = event.status
+            let translation = event.translation
+            switch status {
+            case .sliding:
+//                cardViewsAnimationManager.presentingCardViews.forEach {
+//                    $0.isUserInteractionEnabled = false
+//                }
+                cardViewsAnimationManager.paningCurrentPresentingCardView(withTranslation: translation)
+                
+                return
+            case .endSlide:
+//                cardViewsAnimationManager.presentingCardViews.forEach {
+//                    $0.isUserInteractionEnabled = true
+//                }
+                return
+            case .willPerformSlidingAction:
+//                cardViewsAnimationManager.presentingCardViews.forEach {
+//                    $0.isUserInteractionEnabled = false
+//                }
+                return
+            case .didPerformSlidingAction:
+//                cardViewsAnimationManager.presentingCardViews.forEach {
+//                    $0.isUserInteractionEnabled = true
+//                }
+                cardViewsAnimationManager.nextPresentingCardView?.scaleToNormal()
+                return
+            
+            }
+            
+        }
     }
 }
 
@@ -73,8 +116,16 @@ private extension CardDeskViewViewModel {
 }
 
 extension CardDeskViewViewModel: CardViewsManagerUseCaseDelegate {
-    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, withAddedCards cards: [Card]) {
+    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didChangePresentingCardViews cardViews: [CardView]) {
+        cardViewsAnimationManager.presentingCardViews = cardViews
+    }
+    
+    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didPopPresentingCardView: Bool, presentingCardViews: [CardView]) {
+    }
+    
+    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, withAddedCards cards: [Card], presentingCardViews: [CardView]) {
         loadImages(with: cards)
+//        cardViewsAnimationManager.scaleWaitingCardViews()
     }
     
     func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didDistributeCardView: Bool, cardView: CardView, card: Card) {

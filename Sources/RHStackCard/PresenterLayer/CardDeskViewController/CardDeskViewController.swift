@@ -53,6 +53,8 @@ public class CardDeskViewController: UIViewController {
         view.addGestureRecognizer(tapGestureRecognizer)
         viewModel.addCards(with: _cards)
         setupLayout()
+        addObserver(with: slidingEventObserver)
+        bindEvent()
     }
     
     public func registerCardViewType(withCardViewID cardViewID: String, cardViewType: CardView.Type) {
@@ -127,7 +129,11 @@ extension CardDeskViewController: CardDeskViewViewModelDelegate {
         view.insertSubview(cardView, at: 0)
         cardView.fillSuperView()
         taskManager.markCurrentTaskAsFinished()
+        
+//        cardView.transform = .identity
 
+//        cardView.scaleToMinimumSize()
+//        viewModel.cardViewsAnimationManager.scaleWaitingCardViews()
     }
     
     func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, didGenerateAllCards: Bool) {
@@ -151,6 +157,7 @@ extension CardDeskViewController: CardViewDelegate {
     
     public func cardView(_ cardView: CardView, didRemoveCardViewFromSuperView: Bool) {
         if !didRemoveCardViewFromSuperView { return }
+        
         viewModel.popCardView()
     }
 }

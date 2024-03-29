@@ -58,38 +58,7 @@ extension RHObservable {
     }
 }
 
-public class ObservableSlidingAnimation: RHObservable {
-    public static let shared = ObservableSlidingAnimation.init()
-    public var observers: [WeakWrapper<RHObserver>] = []
-    private init() {}
-}
 
-public struct ObservableEvents {
-    public struct CardViewEvents {
-        public enum Status {
-            case sliding
-            case endSlide
-            case performSlidingAction
-        }
-        
-        public struct SlidingEvent {
-            public let status: CardViewEvents.Status
-            public let translation: CGPoint
-            public var direction: SlidingDirection {
-                .getSlideDirection(with: translation)
-            }
-            public var action: CardViewAction? {
-                .getAction(by: direction)
-            }
-        }
-    }
-}
 
-public class SlidingEventObserver: RHObserver {
-    public var didUpdateValue: ((ObservableEvents.CardViewEvents.SlidingEvent) -> Void)? = nil
-    
-    public func update(_ value: Any) {
-        guard let value = value as? ObservableEvents.CardViewEvents.SlidingEvent else { return }
-        didUpdateValue?(value)
-    }
-}
+
+

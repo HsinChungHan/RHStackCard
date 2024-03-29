@@ -17,11 +17,13 @@ protocol CardViewsManagerUseCaseProtocol: AnyObject {
 }
 
 protocol CardViewsManagerUseCaseDelegate: AnyObject {
-    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, withAddedCards cards: [Card])
+    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, withAddedCards cards: [Card], presentingCardViews: [CardView])
     
     func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didDistributeCardView: Bool, cardView: CardView, card: Card)
 
     func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didGenerateAllCards: Bool)
+    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didPopPresentingCardView: Bool, presentingCardViews: [CardView])
+    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didChangePresentingCardViews cardViews: [CardView])
 }
 
 class CardViewsManagerUseCase: NSObject, CardViewsManagerUseCaseProtocol {
@@ -35,7 +37,18 @@ class CardViewsManagerUseCase: NSObject, CardViewsManagerUseCaseProtocol {
     }
     
     let MAX_PRESENTATION_CARDS = 3
-    var presentingCardViews = [CardView]()
+    var presentingCardViews = [CardView]() {
+        didSet {
+            delegate?.cardViewsManager(self, didChangePresentingCardViews: presentingCardViews)
+        }
+    }
+    var waitingToPresentCardViews: [CardView] {
+        (1...presentingCardViews.count - 1).map { presentingCardViews[$0] }
+    }
+    var nextPresentingCardView: CardView? {
+        presentingCardViews[1]
+    }
+    
     var cardViewsPool = [String: [CardView]]()
     
     var cards = [any Card]()
@@ -64,7 +77,7 @@ class CardViewsManagerUseCase: NSObject, CardViewsManagerUseCaseProtocol {
         initCardViewsPool(with: cards)
         self.cards += cards
         distributeCardView()
-        delegate?.cardViewsManager(self, withAddedCards: cards)
+        delegate?.cardViewsManager(self, withAddedCards: cards, presentingCardViews: presentingCardViews)
     }
     
     private func initCardViewsPool(with cards: [Card]) {
@@ -107,6 +120,7 @@ class CardViewsManagerUseCase: NSObject, CardViewsManagerUseCaseProtocol {
             return
         }
         distributeCardView()
+        delegate?.cardViewsManager(self, didPopPresentingCardView: true, presentingCardViews: presentingCardViews)
     }
     
     private func setupCardView(with card: Card, on cardView: CardView) {

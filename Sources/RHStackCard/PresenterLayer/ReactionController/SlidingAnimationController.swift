@@ -44,6 +44,9 @@ fileprivate extension SlidingAnimationController {
             self.cardView.transform = .identity
             self.cardView.layer.removeAllAnimations()
             self.delegate?.slidingAnimationController(self, didFinishSwipeAwayAnimation: true)
+            
+            let slideEvent = ObservableEvents.CardViewEvents.SlidingEvent(status: .didPerformSlidingAction, translation: direction.swipeAwayTranslationValue)
+            ObservableSlidingAnimation.shared.notify(with: slideEvent)
         }
         addTranslationAnimation(swipeAway: direction, translation: translation)
         addRotationAnimation(angle: angle)
@@ -74,9 +77,7 @@ fileprivate extension SlidingAnimationController {
     }
     
     func handleChanged(_ gesture: UIPanGestureRecognizer) {
-//        print("x:\(cardView.frame.minX), y:\(cardView.frame.minY)")
         let translation = gesture.translation(in: nil)
-        //convert degrees into radians
         let degrees: CGFloat = translation.x / 20
         let angle: CGFloat = -degrees * .pi / 180
         let rotationTransformation = CGAffineTransform.init(rotationAngle: angle)
@@ -131,7 +132,7 @@ extension SlidingAnimationController {
             }
         }
         
-        let slideEvent = ObservableEvents.CardViewEvents.SlidingEvent(status: .performSlidingAction, translation: direction.swipeAwayTranslationValue)
+        let slideEvent = ObservableEvents.CardViewEvents.SlidingEvent(status: .willPerformSlidingAction, translation: direction.swipeAwayTranslationValue)
         ObservableSlidingAnimation.shared.notify(with: slideEvent)
     }
 }

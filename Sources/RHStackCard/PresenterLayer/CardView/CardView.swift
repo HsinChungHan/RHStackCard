@@ -18,6 +18,7 @@ open class CardView: UIView {
     weak var delegate: CardViewDelegate?
     
     private lazy var slidingAnimationController = SlidingAnimationController(dataSource: self, delegate: self)
+    private lazy var scaleSizeAnimation = ScaleSizeAnimationController(dataSource: self)
     private lazy var panGestureRecognizer = makePanGestureRecognizer()
         
     public var card: (any Card)? { viewModel.card }
@@ -227,10 +228,22 @@ extension CardView {
     func updateCardImage(with imageData: Data, at index: Int) {
         viewModel.updateImage(with: imageData, at: index)
     }
+    
+    func scaleDuringPaning(withTranslation transaltion: CGPoint) {
+        scaleSizeAnimation.scaleDuringPaning(with: transaltion)
+    }
+    
+    func scaleToMinimumSize() {
+        scaleSizeAnimation.scaleToMinimumSize()
+    }
+    
+    func scaleToNormal() {
+        scaleSizeAnimation.scaleToNormalSize()
+    }
 }
 
-// MARK: - SlidingAnimationControllerDataSource
-extension CardView: SlidingAnimationControllerDataSource {
+// MARK: - SlidingAnimationControllerDataSource & ScaleSizeAnimationControllerDataSource
+extension CardView: SlidingAnimationControllerDataSource, ScaleSizeAnimationControllerDataSource {
     var cardView: CardView { self }
 }
 
@@ -300,3 +313,4 @@ extension CardView: CardViewViewModelDelegate {
         updateIndexBar(with: index)
     }
 }
+
