@@ -15,7 +15,11 @@ public protocol CardDeskViewControllerDataSource: AnyObject {
 public class CardDeskViewController: UIViewController {
     private lazy var vibrationAnimationController = VibrationAnimationController(dataSource: self, delegate: self)
     
-    private lazy var viewModel = CardDeskViewViewModel(domainURL: dataSource?.domainURL)
+    fileprivate lazy var viewModel = CardDeskViewViewModel(domainURL: dataSource?.domainURL)
+    
+    private lazy var slidingAnimationController = SlidingAnimationController(dataSource: self, delegate: self)
+    private lazy var panGestureRecognizer = makePanGestureRecognizer()
+    
     private lazy var slidingEventObserver = SlidingEventObserver()
     private lazy var cardViewControlBar = makeCardViewControlBar(with: self)
     
@@ -51,6 +55,7 @@ public class CardDeskViewController: UIViewController {
         super.viewDidLoad()
         registerCardViewType()
         view.addGestureRecognizer(tapGestureRecognizer)
+        view.addGestureRecognizer(panGestureRecognizer)
         viewModel.addCards(with: _cards)
         setupLayout()
     }
@@ -98,6 +103,15 @@ fileprivate extension CardDeskViewController {
         bar.delegate = delegate
         return bar
     }
+    
+    func makePanGestureRecognizer() -> UIPanGestureRecognizer {
+        let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePan))
+        return panGesture
+    }
+    
+    @objc func handlePan(gesture: UIPanGestureRecognizer){
+        slidingAnimationController.handlePan(gesture: gesture)
+    }
 }
 
 // MARK: - Internal Methods
@@ -114,6 +128,7 @@ extension CardDeskViewController {
     
     public func doSwipeCardViewTask(with direction: SlidingDirection) {
         currentCardView?.swipe(to: direction)
+        slidingAnimationController.performCardViewActionAnimation(with: direction)
     }
     
     public func slideTopCardView(with action: @escaping () -> Void) {
@@ -151,7 +166,7 @@ extension CardDeskViewController: CardViewDelegate {
     
     public func cardView(_ cardView: CardView, didRemoveCardViewFromSuperView: Bool) {
         if !didRemoveCardViewFromSuperView { return }
-        viewModel.popCardView()
+//        viewModel.popCardView()
     }
 }
 
@@ -179,5 +194,33 @@ extension CardDeskViewController: CardViewControlBarDelegate {
             doSwipeCardViewTask(with: cardViewDirection)
         }
         slideTopCardView(with: action)
+    }
+}
+
+// MARK: - SlidingAnimationControllerDataSource & SlidingAnimationControllerDelegate
+extension CardDeskViewController: SlidingAnimationControllerDataSource {
+    var cardView: CardView? {
+        viewModel.currentCardView
+    }
+}
+
+extension CardDeskViewController: SlidingAnimationControllerDelegate {
+    func slidingAnimationController(_ slidingAnimationController: SlidingAnimationController, didSlideChanged direction: SlidingDirection, withTransaltion translation: CGPoint) {
+        let cardView = slidingAnimationController.cardView
+        cardView?.viewModel.didSlideCahnged(with: direction, withTransaltion: translation)
+    }
+        
+    func slidingAnimationController(_ slidingAnimationController: SlidingAnimationController, willPerformCardViewAction direction: SlidingDirection) {
+        let cardView = slidingAnimationController.cardView
+        switch direction {
+        case .backToIdentity:
+            cardView?.setActionLabelsToBeTransparent()
+        default: break
+        }
+    }
+    
+    func slidingAnimationController(_ slidingAnimationController: SlidingAnimationController, didFinishSwipeAwayAnimation: Bool) {
+        if !didFinishSwipeAwayAnimation { return }
+        viewModel.popCardView()
     }
 }

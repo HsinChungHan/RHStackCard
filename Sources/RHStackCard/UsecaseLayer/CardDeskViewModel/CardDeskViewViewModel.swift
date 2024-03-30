@@ -19,9 +19,30 @@ class CardDeskViewViewModel {
     private lazy var imageRepository = ImageRepository.init(imageNetworkService: ImageNetworkService(domainURL: domainURL), imageStoreService: ImageStoreService())
     private lazy var loadCardImagesUseCase: LoadCardImagesUseCase = LoadCardImagesUseCase(imageRepository: imageRepository)
     
+    private lazy var slidingEventObserver = SlidingEventObserver()
+    
     let domainURL: URL?
     init(domainURL: URL?) {
         self.domainURL = domainURL
+        addObserver(with: slidingEventObserver)
+        bindEvent()
+    }
+    
+    private func addObserver(with slidingEventObserver: SlidingEventObserver) {
+        ObservableSlidingAnimation.shared.addObserver(slidingEventObserver)
+    }
+    
+    private func bindEvent() {
+        slidingEventObserver.didUpdateValue = { [weak self] event in
+            guard let self else { return }
+            switch event.status {
+            case .performSlidingAction:
+//                cardViewsManager.presentingCardViews.first?.isUserInteractionEnabled = false
+                return
+            default:
+                return
+            }
+        }
     }
 }
 

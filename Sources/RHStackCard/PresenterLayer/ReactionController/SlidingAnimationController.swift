@@ -8,7 +8,7 @@
 import UIKit
 
 protocol SlidingAnimationControllerDataSource: AnyObject {
-    var cardView: CardView { get }
+    var cardView: CardView? { get }
 }
 
 protocol SlidingAnimationControllerDelegate: AnyObject {
@@ -20,9 +20,8 @@ protocol SlidingAnimationControllerDelegate: AnyObject {
 }
 
 class SlidingAnimationController {
-    private var cardView: CardView {
-        guard let dataSource else { fatalError() }
-        return dataSource.cardView
+    var cardView: CardView? {
+        return dataSource?.cardView
     }
     
     private weak var dataSource: SlidingAnimationControllerDataSource?
@@ -39,10 +38,10 @@ class SlidingAnimationController {
 fileprivate extension SlidingAnimationController {
     func performSwipAnimation(swipeAway direction: SlidingDirection, translation: CGPoint, angle: CGFloat = 0, completionHandler: (() -> Void)? = nil) {
         CATransaction.setCompletionBlock {[weak self] in
-            guard let self else { return }
-            self.cardView.removeFromSuperview()
-            self.cardView.transform = .identity
-            self.cardView.layer.removeAllAnimations()
+            guard let self, let cardView = self.cardView else { return }
+            cardView.removeFromSuperview()
+            cardView.transform = .identity
+            cardView.layer.removeAllAnimations()
             self.delegate?.slidingAnimationController(self, didFinishSwipeAwayAnimation: true)
         }
         addTranslationAnimation(swipeAway: direction, translation: translation)
@@ -59,18 +58,18 @@ fileprivate extension SlidingAnimationController {
         translationAnimation.fillMode = .forwards
         translationAnimation.isRemovedOnCompletion = false
         translationAnimation.timingFunction = CAMediaTimingFunction.init(name: .easeInEaseOut)
-        cardView.layer.add(translationAnimation, forKey: "translation")
+        cardView?.layer.add(translationAnimation, forKey: "translation")
     }
     
      func addRotationAnimation(angle: CGFloat) {
         let rotationAnimation = CABasicAnimation.init(keyPath: "transform.rotation.z")
         rotationAnimation.toValue = angle * CGFloat.pi / 180
         rotationAnimation.duration = 0.5
-        cardView.layer.add(rotationAnimation, forKey: "rotation")
+        cardView?.layer.add(rotationAnimation, forKey: "rotation")
     }
     
     func handleBegan(_ gesture: UIPanGestureRecognizer) {
-        cardView.layer.removeAllAnimations()
+        cardView?.layer.removeAllAnimations()
     }
     
     func handleChanged(_ gesture: UIPanGestureRecognizer) {
@@ -80,7 +79,7 @@ fileprivate extension SlidingAnimationController {
         let degrees: CGFloat = translation.x / 20
         let angle: CGFloat = -degrees * .pi / 180
         let rotationTransformation = CGAffineTransform.init(rotationAngle: angle)
-        cardView.transform = rotationTransformation.translatedBy(x: translation.x, y: translation.y)
+        cardView?.transform = rotationTransformation.translatedBy(x: translation.x, y: translation.y)
         delegate?.slidingAnimationController(self, didSlideChanged: .getSlideDirection(with: translation), withTransaltion: translation)
         
         let slideEvent = ObservableEvents.CardViewEvents.SlidingEvent(status: .sliding, translation: translation)
@@ -127,7 +126,7 @@ extension SlidingAnimationController {
             performSwipAnimation(swipeAway: .toTop, translation: direction.swipeAwayTranslationValue)
         case .backToIdentity:
             UIView.animate(withDuration: 0.75, delay: 0, usingSpringWithDamping: 0.6, initialSpringVelocity: 0.1, options: .curveEaseOut) {[unowned self] in
-                self.cardView.transform = .identity
+                self.cardView?.transform = .identity
             }
         }
         

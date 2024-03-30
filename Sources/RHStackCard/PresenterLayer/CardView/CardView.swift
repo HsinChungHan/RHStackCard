@@ -16,9 +16,6 @@ public protocol CardViewDelegate: AnyObject {
 
 open class CardView: UIView {
     weak var delegate: CardViewDelegate?
-    
-    private lazy var slidingAnimationController = SlidingAnimationController(dataSource: self, delegate: self)
-    private lazy var panGestureRecognizer = makePanGestureRecognizer()
         
     public var card: (any Card)? { viewModel.card }
     
@@ -50,7 +47,6 @@ open class CardView: UIView {
     override public func draw(_ rect: CGRect) {
         super.draw(rect)
         setupLayout()
-        addGestureRecognizer(panGestureRecognizer)
     }
     
     override public var description: String {
@@ -178,15 +174,6 @@ fileprivate extension CardView {
         view.alpha = 0.0
         return view
     }
-    
-    func makePanGestureRecognizer() -> UIPanGestureRecognizer {
-        let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePan))
-        return panGesture
-    }
-    
-    @objc func handlePan(gesture: UIPanGestureRecognizer){
-        slidingAnimationController.handlePan(gesture: gesture)
-    }
 }
 
 // MARK: - Intenal methods
@@ -205,7 +192,6 @@ extension CardView {
             leftLabel.alpha = 0.0
             rightLabel.alpha = 0.0
         }
-        slidingAnimationController.performCardViewActionAnimation(with: direction)
     }
     
     func setCurrentPhotoIndex(shouldAdvanceNextPhoto: Bool) {
@@ -227,11 +213,17 @@ extension CardView {
     func updateCardImage(with imageData: Data, at index: Int) {
         viewModel.updateImage(with: imageData, at: index)
     }
+    
+    func setActionLabelsToBeTransparent() {
+        leftLabel.alpha = 0.0
+        rightLabel.alpha = 0.0
+        topLabel.alpha = 0.0
+    }
 }
 
 // MARK: - SlidingAnimationControllerDataSource
 extension CardView: SlidingAnimationControllerDataSource {
-    var cardView: CardView { self }
+    var cardView: CardView? { self }
 }
 
 // MARK: - SlidingAnimationControllerDelegate
@@ -281,9 +273,7 @@ extension CardView: CardViewViewModelDelegate {
             leftLabel.alpha = alpha
             
         case .backToIdentity:
-            topLabel.alpha = 0.0
-            rightLabel.alpha = 0.0
-            leftLabel.alpha = 0.0
+            setActionLabelsToBeTransparent()
         }
     }
     
