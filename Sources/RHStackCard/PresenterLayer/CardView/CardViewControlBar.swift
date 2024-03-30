@@ -128,7 +128,7 @@ extension CardViewControlBar {
         let status = slidingEvent.status
         let translation = slidingEvent.translation
         guard let action = slidingEvent.action else { return }
-        if status == .performSlidingAction {
+        if status != .sliding {
             visualReset(with: action)
             return
         }
