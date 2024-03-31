@@ -77,10 +77,10 @@ extension CardDeskViewViewModel {
             // 當 slideAction 為 refresh 時， cardViewDirection 為 none
             case .none:
                 self.addNewCards(with: cards)
+                self.taskManager.markCurrentTaskAsFinished()
             default:
                 self.doSwipeCardViewTask(with: cardViewDirection)
             }
-//            self.taskManager.markCurrentTaskAsFinished()
         }
         taskManager.addSlideOutAction(action)
     }
