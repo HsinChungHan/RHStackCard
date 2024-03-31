@@ -11,6 +11,7 @@ public enum SlidingDirection {
     case toRight
     case toTop
     case backToIdentity
+    case none
     
     enum Constant {
         enum Slide {
@@ -48,7 +49,7 @@ public enum SlidingDirection {
             return .init(x: 0, y: -300)
         case .toLeft:
             return .init(x: -300, y: 0)
-        case .backToIdentity:
+        case .backToIdentity, .none:
             return .init(x: 0, y: 0)
         }
     }

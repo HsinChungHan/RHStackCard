@@ -17,7 +17,7 @@ protocol CardViewsManagerUseCaseProtocol: AnyObject {
 }
 
 protocol CardViewsManagerUseCaseDelegate: AnyObject {
-    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didDistributeCardViews presentingCardViews: [CardView], forAddedCards cards: [Card])
+    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didDistributeCardViews presentingCardViews: [CardView], whenAddNewCards cards: [Card])
     
     func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didDistributeCardView cardView: CardView, forSingleCard card: Card)
 
@@ -72,21 +72,23 @@ extension CardViewsManagerUseCase {
         initCardViewsPool(with: cards)
         self.cards += cards
         distributeCardViews()
-        delegate?.cardViewsManager(self, didDistributeCardViews: presentingCardViews, forAddedCards: cards)
+        delegate?.cardViewsManager(self, didDistributeCardViews: presentingCardViews, whenAddNewCards: cards)
     }
     
     func popCardView() {
-        let popedCardView = presentingCardViews.removeFirst()
-        let popedCardViewTypeName = popedCardView.card!.cardViewTypeName
-        cardViewsPool[popedCardViewTypeName]!.append(popedCardView)
-        popedCardView.reset()
-        let popedCard = presentingCards.removeFirst()
-        popedCards.append(popedCard)
-        if cards.isEmpty {
+        let isGeneratedAllCards = !presentingCardViews.isEmpty && !presentingCards.isEmpty
+        
+        if !isGeneratedAllCards {
+            let popedCardView = presentingCardViews.removeFirst()
+            let popedCardViewTypeName = popedCardView.card!.cardViewTypeName
+            cardViewsPool[popedCardViewTypeName]!.append(popedCardView)
+            popedCardView.reset()
+            let popedCard = presentingCards.removeFirst()
+            popedCards.append(popedCard)
+            distributeCardViews()
+        } else {
             delegate?.cardViewsManager(self, didGenerateAllCards: true)
-            return
         }
-        distributeCardViews()
     }
 }
 
@@ -105,6 +107,11 @@ private extension CardViewsManagerUseCase {
     }
     
     func distributeCardViews() {
+        let isGeneratedAllCards = cards.isEmpty
+        if isGeneratedAllCards {
+            delegate?.cardViewsManager(self, didGenerateAllCards: true)
+        }
+        
         while !cards.isEmpty && presentingCardViews.count < MAX_PRESENTATION_CARDS {
             let targetCard = cards.removeFirst()
             let targetCardViewType = targetCard.cardViewTypeName

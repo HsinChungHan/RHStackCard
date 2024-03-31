@@ -72,7 +72,7 @@ extension CardViewViewModel {
             alpha = translationXDirection / 100
         case .toLeft:
             alpha = -translationXDirection / 100
-        case .backToIdentity:
+        case .backToIdentity, .none:
             break
         }
         delegate?.cardViewViewModel(self, didSlideDirection: direction, withLabelAlpha: alpha)

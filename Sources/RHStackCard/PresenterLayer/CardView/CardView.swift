@@ -186,7 +186,7 @@ extension CardView {
             rightLabel.alpha = 1.0
         case .toTop:
             topLabel.alpha = 1.0
-        case .backToIdentity:
+        case .backToIdentity, .none:
             topLabel.alpha = 0.0
             leftLabel.alpha = 0.0
             rightLabel.alpha = 0.0
@@ -244,7 +244,7 @@ extension CardView: CardViewViewModelDelegate {
             rightLabel.alpha = 0.0
             leftLabel.alpha = alpha
             
-        case .backToIdentity:
+        case .backToIdentity, .none:
             setActionLabelsToBeTransparent()
         }
     }

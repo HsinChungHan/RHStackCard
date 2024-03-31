@@ -197,11 +197,8 @@ private extension CardViewControlBar {
     }
     
     @objc func handleRewindButtonAction(_ sender: HightlightedButton) {
-        disableAllControls()
-        sender.setIdentityAnimation(duration: 0.5) {
-            self.enableAllControls()
-        }
-        delegate?.cardViewControlBar(self, slideAction: .rewind)
+        sender.setIdentityAnimation() {}
+//        delegate?.cardViewControlBar(self, slideAction: .rewind)
     }
     
     @objc func handleNopeButtonAction(_ sender: HightlightedButton) {

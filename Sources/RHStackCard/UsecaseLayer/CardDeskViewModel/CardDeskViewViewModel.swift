@@ -27,6 +27,7 @@ class CardDeskViewViewModel {
     private lazy var loadCardImagesUseCase: LoadCardImagesUseCase = LoadCardImagesUseCase(imageRepository: imageRepository)
     
     let scaleSizeManager = ScaleSizeAnimationController()
+    let taskManager = TaskManager()
     private lazy var slidingAnimationController = SlidingAnimationController(dataSource: self, delegate: self)
     private lazy var slidingEventObserver = SlidingEventObserver()
 
@@ -51,7 +52,7 @@ extension CardDeskViewViewModel {
 
 // MARK: - Internal Methods
 extension CardDeskViewViewModel {
-    func addCards(with cards: [Card]) {
+    func addNewCards(with cards: [Card]) {
         cardViewsManager.addNewCards(with: cards)
     }
     
@@ -66,6 +67,22 @@ extension CardDeskViewViewModel {
     func doSwipeCardViewTask(with direction: SlidingDirection) {
         currentCardView?.swipe(to: direction)
         slidingAnimationController.performCardViewActionAnimation(with: direction)
+    }
+    
+    func doCardViewControlBarEvent(slideAction: CardViewAction, cards: [Card]) {
+        let action = { [weak self] in
+            guard let self else { return }
+            let cardViewDirection = slideAction.cardViewDirection
+            switch cardViewDirection {
+            // 當 slideAction 為 refresh 時， cardViewDirection 為 none
+            case .none:
+                self.addNewCards(with: cards)
+            default:
+                self.doSwipeCardViewTask(with: cardViewDirection)
+            }
+//            self.taskManager.markCurrentTaskAsFinished()
+        }
+        taskManager.addSlideOutAction(action)
     }
 }
 
@@ -105,39 +122,43 @@ private extension CardDeskViewViewModel {
     }
 }
 
+// MARK: - CardViewsManagerUseCaseDelegate
 extension CardDeskViewViewModel: CardViewsManagerUseCaseDelegate {
     func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didDistributeCardView cardView: CardView, forSingleCard card: Card) {
         loadImage(with: card)
+        taskManager.markCurrentTaskAsFinished()
         delegate?.cardDeskViewViewModel(self, didDistributCardViewForSingleCard: cardView)
     }
     
-    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didDistributeCardViews presentingCardViews: [CardView], forAddedCards cards: [Card]) {
+    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didDistributeCardViews presentingCardViews: [CardView], whenAddNewCards cards: [Card]) {
         loadImages(with: cards)
         delegate?.cardDeskViewViewModel(self, didDistributCardViewsForAddedCards: cardViews)
     }
     
     func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didGenerateAllCards: Bool) {
+        taskManager.reset()
         delegate?.cardDeskViewViewModel(self, didGenerateAllCards: true)
     }
 }
 
-// MARK: - SlidingAnimationControllerDataSource & SlidingAnimationControllerDelegate
+// MARK: - SlidingAnimationControllerDataSource
 extension CardDeskViewViewModel: SlidingAnimationControllerDataSource {
     var cardView: CardView? {
         currentCardView
     }
 }
 
+// MARK: - SlidingAnimationControllerDelegate
 extension CardDeskViewViewModel: SlidingAnimationControllerDelegate {
     func slidingAnimationController(_ slidingAnimationController: SlidingAnimationController, didSlideChanged direction: SlidingDirection, withTransaltion translation: CGPoint) {
         let cardView = slidingAnimationController.cardView
         cardView?.viewModel.didSlideCahnged(with: direction, withTransaltion: translation)
         
+        scaleSizeManager.presentingCardViews = cardViews
         scaleSizeManager.paningCurrentPresentingCardView(withTranslation: translation)
     }
         
     func slidingAnimationController(_ slidingAnimationController: SlidingAnimationController, willPerformCardViewAction direction: SlidingDirection) {
-//        view.isUserInteractionEnabled = false
         delegate?.cardDeskViewViewModel(self, willPerformCardViewAction: direction)
         let cardView = slidingAnimationController.cardView
         switch direction {
@@ -148,7 +169,6 @@ extension CardDeskViewViewModel: SlidingAnimationControllerDelegate {
     }
     
     func slidingAnimationController(_ slidingAnimationController: SlidingAnimationController, cardViewDidPerformSwipeActionAnimation direction: SlidingDirection) {
-//        view.isUserInteractionEnabled = true
         delegate?.cardDeskViewViewModel(self, didPerformCardViewAction: direction)
         if direction != .backToIdentity {
             popCardView()
@@ -157,5 +177,4 @@ extension CardDeskViewViewModel: SlidingAnimationControllerDelegate {
         scaleSizeManager.presentingCardViews = cardViews
         scaleSizeManager.scaleCurrentPresentCardView()
     }
-    
 }

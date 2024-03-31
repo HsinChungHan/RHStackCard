@@ -23,15 +23,9 @@ public class CardDeskViewController: UIViewController {
     private lazy var cardViewControlBar = makeCardViewControlBar(with: self)
     
     var currentCardView: CardView? {
-        guard let currentCardView = viewModel.currentCardView else {
-            taskManager.reset()
-            return nil
-        }
-        return currentCardView
+        viewModel.currentCardView
     }
-    
-    let taskManager = TaskManager()
-    
+
     private var _cards: [Card] {
         guard let dataSource else { return [] }
         return dataSource.cards
@@ -55,7 +49,7 @@ public class CardDeskViewController: UIViewController {
         registerCardViewType()
         view.addGestureRecognizer(tapGestureRecognizer)
         view.addGestureRecognizer(panGestureRecognizer)
-        viewModel.addCards(with: _cards)
+        viewModel.addNewCards(with: _cards)
         setupLayout()
         
         addObserver(with: slidingEventObserver)
@@ -116,24 +110,15 @@ fileprivate extension CardDeskViewController {
     }
 }
 
-// MARK: - Internal Methods
+// MARK: - Public Methods
 extension CardDeskViewController {
     public func addInSuperViewController(with superViewController: UIViewController) {
         superViewController.addChild(self)
         didMove(toParent: superViewController)
     }
     
-    public func doAppendNewCardsTask(with cards: [Card]) {
-        viewModel.addCards(with: cards)
-        taskManager.markCurrentTaskAsFinished()
-    }
-    
-    public func doSwipeCardViewTask(with direction: SlidingDirection) {
-        viewModel.doSwipeCardViewTask(with: direction)
-    }
-    
-    public func slideTopCardView(with action: @escaping () -> Void) {
-        taskManager.addSlideOutAction(action)
+    public func testTaskManager(slideAction: CardViewAction) {
+        viewModel.doCardViewControlBarEvent(slideAction: slideAction, cards: _cards)
     }
 }
 
@@ -141,7 +126,6 @@ extension CardDeskViewController {
 extension CardDeskViewController: CardDeskViewViewModelDelegate {
     func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, didReciveCardViewSlidingEvent event: ObservableEvents.CardViewEvents.SlidingEvent) {
         cardViewControlBar.handleSlideBehaviorLabelAlpha(with: event)
-
     }
     
     func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, willPerformCardViewAction direction: SlidingDirection) {
@@ -158,7 +142,6 @@ extension CardDeskViewController: CardDeskViewViewModelDelegate {
             view.insertSubview(singleCardView, at: 0)
             singleCardView.fillSuperView()
         }
-        taskManager.markCurrentTaskAsFinished()
         
         viewModel.scaleSizeManager.presentingCardViews = viewModel.cardViews
         viewModel.scaleSizeManager.scaleWaitingCardViews()
@@ -172,14 +155,9 @@ extension CardDeskViewController: CardDeskViewViewModelDelegate {
                 cardView1.fillSuperView()
             }
         }
-        
-        viewModel.scaleSizeManager.presentingCardViews = viewModel.cardViews
-        viewModel.scaleSizeManager.scaleWaitingCardViews()
     }
     
-    func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, didGenerateAllCards: Bool) {
-        taskManager.markCurrentTaskAsFinished()
-    }
+    func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, didGenerateAllCards: Bool) {}
 }
 
 // MARK: - CardViewDelegate
@@ -212,16 +190,6 @@ extension CardDeskViewController: VibrationAnimationControllerDelegate {
 // MARK: - CardViewControlBarDelegate
 extension CardDeskViewController: CardViewControlBarDelegate {
     public func cardViewControlBar(_ cardViewControlBar: CardViewControlBar, slideAction: CardViewAction) {
-        let action = { [weak self] in
-            guard let self else { return }
-            let cardViewDirection = slideAction.cardViewDirection
-            if cardViewDirection == .backToIdentity {
-                let newCards = _cards
-                doAppendNewCardsTask(with: newCards)
-                return
-            }
-            doSwipeCardViewTask(with: cardViewDirection)
-        }
-        slideTopCardView(with: action)
+        viewModel.doCardViewControlBarEvent(slideAction: slideAction, cards: _cards)
     }
 }

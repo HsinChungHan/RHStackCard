@@ -64,6 +64,8 @@ public enum CardViewAction: CaseIterable {
             return .toLeft
         case .superLike:
             return .toTop
+        case .refresh:
+            return .none
         default:
             return .backToIdentity
         }

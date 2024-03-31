@@ -38,11 +38,10 @@ class SlidingAnimationController {
 fileprivate extension SlidingAnimationController {
     func performSwipAnimation(swipeAway direction: SlidingDirection, translation: CGPoint, angle: CGFloat = 0, completionHandler: (() -> Void)? = nil) {
         CATransaction.setCompletionBlock {[weak self] in
-            guard let self, let cardView = self.cardView else { return }
-            
-            cardView.removeFromSuperview()
-            cardView.transform = .identity
-            cardView.layer.removeAllAnimations()
+            guard let self else { return }
+            cardView?.removeFromSuperview()
+            cardView?.transform = .identity
+            cardView?.layer.removeAllAnimations()
             self.delegate?.slidingAnimationController(self, cardViewDidPerformSwipeActionAnimation: direction)
             notifyDidPerformSlidingActionEvent()
         }
@@ -136,7 +135,10 @@ extension SlidingAnimationController {
                 guard let cardView = self.cardView else { return }
                 self.delegate?.slidingAnimationController(self, cardViewDidPerformSwipeActionAnimation: direction)
             }
+        case .none:
+            return
         }
+     
     }
     
     private func notifyBackToIdentity() {
