@@ -24,7 +24,7 @@ open class CardView: UIView {
     public required init(uid: String) {
         self.uid = uid
         super.init(frame: .zero)
-        backgroundColor = .black
+        backgroundColor = .white
         viewModel.delegate = self
     }
     
@@ -52,6 +52,11 @@ open class CardView: UIView {
         return "\(super.description) \nuid: \(uid)"
     }
     
+    open override func layoutSubviews() {
+        super.layoutSubviews()
+        gradientLayer.frame = imageView.bounds
+    }
+    
     open func setupLayout() {
         setupViewLayout()
     }
@@ -60,13 +65,12 @@ open class CardView: UIView {
 // MARK: - Layouts
 private extension CardView {
     func setupViewLayout() {
+        backgroundColor = .white
         clipsToBounds = true
         layer.cornerRadius = 20.0
         
         addSubview(imageView)
         imageView.fillSuperView()
-        layer.addSublayer(gradientLayer)
-        gradientLayer.frame = bounds
         [rightLabel, topLabel, leftLabel, indexBarStackView].forEach {
             addSubview($0)
         }
@@ -113,6 +117,7 @@ fileprivate extension CardView {
         let view = UIImageView()
         view.clipsToBounds = true
         view.contentMode = .scaleAspectFill
+        view.layer.addSublayer(gradientLayer)
         return view
     }
     
@@ -135,7 +140,7 @@ fileprivate extension CardView {
     
     func makeGradientLayer() -> CAGradientLayer {
         let layer = CAGradientLayer()
-        layer.colors = [Color.Neutral.v100, Color.Blue.v50]
+        layer.colors = [UIColor.clear.cgColor, UIColor.black.cgColor]
         layer.locations = [0.5, 1.0]
         return layer
     }
