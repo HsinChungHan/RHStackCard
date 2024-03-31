@@ -39,7 +39,7 @@ public class CardViewControlBar: UIView {
 }
 
 // MARK: - Interanl functions
-extension CardViewControlBar {
+private extension CardViewControlBar {
     func setupLayout() {
         addSubview(controlStackView)
         
@@ -53,33 +53,21 @@ extension CardViewControlBar {
     }
     
     func setColorAlpha(with action: CardViewAction, alpha: CGFloat) {
-        switch action {
-        case .nope:
-            nopeButton.backgroundColor = action.color.withAlphaComponent(alpha)
-        case .superLike:
-            superLikeButton.backgroundColor = action.color.withAlphaComponent(alpha)
-        case .like:
-            likeButton.backgroundColor = action.color.withAlphaComponent(alpha)
-        default:
-            break
+        let button = toButton(with: action)
+        button.backgroundColor = action.color.withAlphaComponent(alpha)
+    }
+    
+    func resetColorAlpha(except action: CardViewAction) {
+        [CardViewAction.nope, CardViewAction.like, CardViewAction.superLike].forEach {
+            if $0 != action {
+                setColorAlpha(with: $0, alpha: 0.0)
+            }
         }
     }
     
     func setSizeAnimation(with action: CardViewAction, scale: CGFloat) {
+        let button = toButton(with: action)
         var scaleX = CGFloat(1+scale)
-        
-        var button: UIButton
-        switch action {
-        case .nope:
-            button = nopeButton
-        case .superLike:
-            button = superLikeButton
-        case .like:
-            button = likeButton
-        default:
-            return
-        }
-        
         if scaleX <= 1 {
             button.transform = .identity
             return
@@ -90,6 +78,15 @@ extension CardViewControlBar {
         button.transform = sizeTransformation
     }
     
+    func resetSizeAnimation(except action: CardViewAction) {
+        let actions: [CardViewAction] = [.nope, .like, .superLike, .refresh]
+        actions.forEach {
+            if $0 != action {
+                setSizeIdenty(with: $0)
+            }
+        }
+    }
+    
     func visualReset(with action: CardViewAction) {
         UIView.animate(withDuration: 0.25, delay: 0, usingSpringWithDamping: 0.6, initialSpringVelocity: 0.1, options: .curveEaseOut) {[unowned self] in
             self.setColorAlpha(with: action, alpha: 0)
@@ -98,28 +95,31 @@ extension CardViewControlBar {
     }
     
     func setSizeIdenty(with action: CardViewAction) {
-        var button: UIButton
-        switch action {
-        case .nope:
-            button = nopeButton
-        case .superLike:
-            button = superLikeButton
-        case .like:
-            button = likeButton
-        case .refresh:
-            button = refreshButton
-        default:
-            return
-        }
-        button.transform = .identity
+        toButton(with: action).transform = .identity
     }
     
-    private func disableAllControls() {
+    func disableAllControls() {
         controlButtons.forEach { $0.isEnabled = false }
     }
     
-    private func enableAllControls() {
+    func enableAllControls() {
         controlButtons.forEach { $0.isEnabled = true }
+    }
+    
+    func toButton(with action: CardViewAction) -> UIButton {
+        switch action {
+        case .like:
+            return likeButton
+        case .nope:
+            return nopeButton
+        case .superLike:
+            return superLikeButton
+        case .refresh:
+            return refreshButton
+        case .rewind:
+            return rewindButton
+        }
+        return UIButton()
     }
 }
 
@@ -142,10 +142,16 @@ extension CardViewControlBar {
         switch action {
         case .superLike:
             alpha = (-translationYDirection - abs(translationXDirection) * 1) / 100
+            resetSizeAnimation(except: .superLike)
+            resetColorAlpha(except: .superLike)
         case .like:
             alpha = translationXDirection / 100
+            resetSizeAnimation(except: .like)
+            resetColorAlpha(except: .like)
         case .nope:
             alpha = -translationXDirection / 100
+            resetSizeAnimation(except: .nope)
+            resetColorAlpha(except: .nope)
         default:
             break
         }
