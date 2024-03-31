@@ -76,9 +76,9 @@ extension CardViewsManagerUseCase {
     }
     
     func popCardView() {
-        let isGeneratedAllCards = !presentingCardViews.isEmpty && !presentingCards.isEmpty
+        let isNotGeneratedAllCards = !presentingCardViews.isEmpty && !presentingCards.isEmpty
         
-        if !isGeneratedAllCards {
+        if isNotGeneratedAllCards {
             let popedCardView = presentingCardViews.removeFirst()
             let popedCardViewTypeName = popedCardView.card!.cardViewTypeName
             cardViewsPool[popedCardViewTypeName]!.append(popedCardView)
