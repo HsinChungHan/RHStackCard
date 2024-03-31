@@ -17,11 +17,12 @@ public class CardViewControlBar: UIView {
     lazy var controlButtons = makeControlButtons()
     lazy var controlStackView = makeControlStackView()
     
-    var rewindButton: HightlightedButton { controlButtons[CardViewAction.rewind.rawValue] }
-    var nopeButton: HightlightedButton { controlButtons[CardViewAction.nope.rawValue] }
-    var superLikeButton: HightlightedButton { controlButtons[CardViewAction.superLike.rawValue] }
-    var likeButton: HightlightedButton { controlButtons[CardViewAction.like.rawValue] }
-    var refreshButton: HightlightedButton { controlButtons[CardViewAction.refresh.rawValue] }
+    var rewindButton: HightlightedButton { controlButtons[getButtonIndex(with: .rewind)] }
+    var nopeButton: HightlightedButton { controlButtons[getButtonIndex(with: .nope)] }
+    var superLikeButton: HightlightedButton { controlButtons[getButtonIndex(with: .superLike)] }
+    var likeButton: HightlightedButton { controlButtons[getButtonIndex(with: .like)] }
+    var refreshButton: HightlightedButton { controlButtons[getButtonIndex(with: .refresh)] }
+    
     
     let buttonsShouldHaveInitialColor: Bool
     
@@ -153,8 +154,8 @@ extension CardViewControlBar {
     }
 }
 
-// MARK: - Lazy init
-extension CardViewControlBar {
+// MARK: - Factory Methods
+private extension CardViewControlBar {
     func makeControlButtons() -> [HightlightedButton] {
         let buttons = CardViewAction.allCases.map { slideAction -> HightlightedButton in
             let initialAlpha = (self.buttonsShouldHaveInitialColor == true) ? 1.0 : 0.0
@@ -218,3 +219,21 @@ extension CardViewControlBar {
     }
 }
 
+// MARK: - Helpers
+private extension CardViewControlBar {
+    func getButtonIndex(with action: CardViewAction) -> Int {
+        switch action {
+        case .rewind:
+            return 0
+        case .nope:
+            return 1
+        case .superLike:
+            return 2
+        case .like:
+            return 3
+        case .refresh:
+            return 4
+        }
+    }
+    
+}

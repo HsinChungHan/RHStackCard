@@ -9,9 +9,9 @@
 import RHUIComponent
 import UIKit
 
-public enum CardViewAction: Int, CaseIterable {
+public enum CardViewAction: CaseIterable {
     
-    case rewind = 0, nope, superLike, like, refresh
+    case rewind, nope, superLike, like, refresh
     
     var iconName: String {
         switch self {
