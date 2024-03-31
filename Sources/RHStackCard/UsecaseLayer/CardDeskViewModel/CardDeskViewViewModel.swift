@@ -13,9 +13,10 @@ protocol CardDeskViewViewModelDelegate: AnyObject {
     
     func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, didGenerateAllCards: Bool)
     
-    
     func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, willPerformCardViewAction direction: SlidingDirection)
     func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, didPerformCardViewAction: SlidingDirection)
+    
+    func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, didReciveCardViewSlidingEvent event: ObservableEvents.CardViewEvents.SlidingEvent)
 }
 
 class CardDeskViewViewModel {
@@ -27,10 +28,13 @@ class CardDeskViewViewModel {
     
     let scaleSizeManager = ScaleSizeAnimationController()
     private lazy var slidingAnimationController = SlidingAnimationController(dataSource: self, delegate: self)
-    
+    private lazy var slidingEventObserver = SlidingEventObserver()
+
     let domainURL: URL?
     init(domainURL: URL?) {
         self.domainURL = domainURL
+        addObserver(with: slidingEventObserver)
+        bindEvent()
     }
 }
 
@@ -86,6 +90,17 @@ private extension CardDeskViewViewModel {
             case .failure(_):
                 return
             }
+        }
+    }
+    
+    private func addObserver(with slidingEventObserver: SlidingEventObserver) {
+        ObservableSlidingAnimation.shared.addObserver(slidingEventObserver)
+    }
+    
+    private func bindEvent() {
+        slidingEventObserver.didUpdateValue = { [weak self] event in
+            guard let self else { return }
+            self.delegate?.cardDeskViewViewModel(self, didReciveCardViewSlidingEvent: event)
         }
     }
 }

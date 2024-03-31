@@ -137,7 +137,13 @@ extension CardDeskViewController {
     }
 }
 
+// MARK: - CardDeskViewViewModelDelegate
 extension CardDeskViewController: CardDeskViewViewModelDelegate {
+    func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, didReciveCardViewSlidingEvent event: ObservableEvents.CardViewEvents.SlidingEvent) {
+        cardViewControlBar.handleSlideBehaviorLabelAlpha(with: event)
+
+    }
+    
     func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, willPerformCardViewAction direction: SlidingDirection) {
         view.isUserInteractionEnabled = false
     }
@@ -176,6 +182,7 @@ extension CardDeskViewController: CardDeskViewViewModelDelegate {
     }
 }
 
+// MARK: - CardViewDelegate
 extension CardDeskViewController: CardViewDelegate {
     public func cardView(_ cardView: CardView, didTapOutOfIndex direction: CardViewViewModel.OutOfIndexDirection) {
         switch direction {
@@ -202,6 +209,7 @@ extension CardDeskViewController: VibrationAnimationControllerDelegate {
     }
 }
 
+// MARK: - CardViewControlBarDelegate
 extension CardDeskViewController: CardViewControlBarDelegate {
     public func cardViewControlBar(_ cardViewControlBar: CardViewControlBar, slideAction: CardViewAction) {
         let action = { [weak self] in
