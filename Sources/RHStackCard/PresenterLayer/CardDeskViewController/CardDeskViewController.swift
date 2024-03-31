@@ -17,7 +17,6 @@ public class CardDeskViewController: UIViewController {
     
     fileprivate lazy var viewModel = CardDeskViewViewModel(domainURL: dataSource?.domainURL)
     
-    private lazy var slidingAnimationController = SlidingAnimationController(dataSource: self, delegate: self)
     private lazy var panGestureRecognizer = makePanGestureRecognizer()
     
     private lazy var slidingEventObserver = SlidingEventObserver()
@@ -113,7 +112,7 @@ fileprivate extension CardDeskViewController {
     }
     
     @objc func handlePan(gesture: UIPanGestureRecognizer){
-        slidingAnimationController.handlePan(gesture: gesture)
+        viewModel.handlePan(gesture: gesture)
     }
 }
 
@@ -130,8 +129,7 @@ extension CardDeskViewController {
     }
     
     public func doSwipeCardViewTask(with direction: SlidingDirection) {
-        currentCardView?.swipe(to: direction)
-        slidingAnimationController.performCardViewActionAnimation(with: direction)
+        viewModel.doSwipeCardViewTask(with: direction)
     }
     
     public func slideTopCardView(with action: @escaping () -> Void) {
@@ -140,6 +138,14 @@ extension CardDeskViewController {
 }
 
 extension CardDeskViewController: CardDeskViewViewModelDelegate {
+    func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, willPerformCardViewAction direction: SlidingDirection) {
+        view.isUserInteractionEnabled = false
+    }
+    
+    func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, didPerformCardViewAction: SlidingDirection) {
+        view.isUserInteractionEnabled = true
+    }
+    
     func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, didDistributCardViewForSingleCard singleCardView: CardView) {
         if !view.subviews.contains(where: { $0 === singleCardView }) {
             singleCardView.delegate = self
@@ -210,41 +216,4 @@ extension CardDeskViewController: CardViewControlBarDelegate {
         }
         slideTopCardView(with: action)
     }
-}
-
-// MARK: - SlidingAnimationControllerDataSource & SlidingAnimationControllerDelegate
-extension CardDeskViewController: SlidingAnimationControllerDataSource {
-    var cardView: CardView? {
-        viewModel.currentCardView
-    }
-}
-
-extension CardDeskViewController: SlidingAnimationControllerDelegate {
-    func slidingAnimationController(_ slidingAnimationController: SlidingAnimationController, didSlideChanged direction: SlidingDirection, withTransaltion translation: CGPoint) {
-        let cardView = slidingAnimationController.cardView
-        cardView?.viewModel.didSlideCahnged(with: direction, withTransaltion: translation)
-        
-        viewModel.scaleSizeManager.paningCurrentPresentingCardView(withTranslation: translation)
-    }
-        
-    func slidingAnimationController(_ slidingAnimationController: SlidingAnimationController, willPerformCardViewAction direction: SlidingDirection) {
-        view.isUserInteractionEnabled = false
-        let cardView = slidingAnimationController.cardView
-        switch direction {
-        case .backToIdentity:
-            cardView?.setActionLabelsToBeTransparent()
-        default: break
-        }
-    }
-    
-    func slidingAnimationController(_ slidingAnimationController: SlidingAnimationController, cardViewDidPerformSwipeActionAnimation direction: SlidingDirection) {
-        view.isUserInteractionEnabled = true
-        if direction != .backToIdentity {
-            viewModel.popCardView()
-        }
-        
-        viewModel.scaleSizeManager.presentingCardViews = viewModel.cardViews
-        viewModel.scaleSizeManager.scaleCurrentPresentCardView()
-    }
-    
 }

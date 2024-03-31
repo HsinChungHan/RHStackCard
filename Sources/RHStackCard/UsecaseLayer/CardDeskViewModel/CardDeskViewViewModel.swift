@@ -12,6 +12,10 @@ protocol CardDeskViewViewModelDelegate: AnyObject {
     func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, didDistributCardViewForSingleCard singleCardView: CardView)
     
     func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, didGenerateAllCards: Bool)
+    
+    
+    func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, willPerformCardViewAction direction: SlidingDirection)
+    func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, didPerformCardViewAction: SlidingDirection)
 }
 
 class CardDeskViewViewModel {
@@ -22,6 +26,8 @@ class CardDeskViewViewModel {
     private lazy var loadCardImagesUseCase: LoadCardImagesUseCase = LoadCardImagesUseCase(imageRepository: imageRepository)
     
     let scaleSizeManager = ScaleSizeAnimationController()
+    private lazy var slidingAnimationController = SlidingAnimationController(dataSource: self, delegate: self)
+    
     let domainURL: URL?
     init(domainURL: URL?) {
         self.domainURL = domainURL
@@ -47,6 +53,15 @@ extension CardDeskViewViewModel {
     
     func popCardView() {
         cardViewsManager.popCardView()
+    }
+    
+    func handlePan(gesture: UIPanGestureRecognizer) {
+        slidingAnimationController.handlePan(gesture: gesture)
+    }
+    
+    func doSwipeCardViewTask(with direction: SlidingDirection) {
+        currentCardView?.swipe(to: direction)
+        slidingAnimationController.performCardViewActionAnimation(with: direction)
     }
 }
 
@@ -79,16 +94,53 @@ extension CardDeskViewViewModel: CardViewsManagerUseCaseDelegate {
     func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didDistributeCardView cardView: CardView, forSingleCard card: Card) {
         loadImage(with: card)
         delegate?.cardDeskViewViewModel(self, didDistributCardViewForSingleCard: cardView)
-        scaleSizeManager.presentingCardViews = cardViewsManager.presentingCardViews
     }
     
     func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didDistributeCardViews presentingCardViews: [CardView], forAddedCards cards: [Card]) {
         loadImages(with: cards)
         delegate?.cardDeskViewViewModel(self, didDistributCardViewsForAddedCards: cardViews)
-        scaleSizeManager.presentingCardViews = presentingCardViews
     }
     
     func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didGenerateAllCards: Bool) {
         delegate?.cardDeskViewViewModel(self, didGenerateAllCards: true)
     }
+}
+
+// MARK: - SlidingAnimationControllerDataSource & SlidingAnimationControllerDelegate
+extension CardDeskViewViewModel: SlidingAnimationControllerDataSource {
+    var cardView: CardView? {
+        currentCardView
+    }
+}
+
+extension CardDeskViewViewModel: SlidingAnimationControllerDelegate {
+    func slidingAnimationController(_ slidingAnimationController: SlidingAnimationController, didSlideChanged direction: SlidingDirection, withTransaltion translation: CGPoint) {
+        let cardView = slidingAnimationController.cardView
+        cardView?.viewModel.didSlideCahnged(with: direction, withTransaltion: translation)
+        
+        scaleSizeManager.paningCurrentPresentingCardView(withTranslation: translation)
+    }
+        
+    func slidingAnimationController(_ slidingAnimationController: SlidingAnimationController, willPerformCardViewAction direction: SlidingDirection) {
+//        view.isUserInteractionEnabled = false
+        delegate?.cardDeskViewViewModel(self, willPerformCardViewAction: direction)
+        let cardView = slidingAnimationController.cardView
+        switch direction {
+        case .backToIdentity:
+            cardView?.setActionLabelsToBeTransparent()
+        default: break
+        }
+    }
+    
+    func slidingAnimationController(_ slidingAnimationController: SlidingAnimationController, cardViewDidPerformSwipeActionAnimation direction: SlidingDirection) {
+//        view.isUserInteractionEnabled = true
+        delegate?.cardDeskViewViewModel(self, didPerformCardViewAction: direction)
+        if direction != .backToIdentity {
+            popCardView()
+        }
+        
+        scaleSizeManager.presentingCardViews = cardViews
+        scaleSizeManager.scaleCurrentPresentCardView()
+    }
+    
 }
