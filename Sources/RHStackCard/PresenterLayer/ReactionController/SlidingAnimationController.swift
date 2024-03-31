@@ -39,10 +39,11 @@ fileprivate extension SlidingAnimationController {
     func performSwipAnimation(swipeAway direction: SlidingDirection, translation: CGPoint, angle: CGFloat = 0, completionHandler: (() -> Void)? = nil) {
         CATransaction.setCompletionBlock {[weak self] in
             guard let self, let cardView = self.cardView else { return }
+            self.delegate?.slidingAnimationController(self, didFinishSwipeAwayAnimation: true)
             cardView.removeFromSuperview()
             cardView.transform = .identity
             cardView.layer.removeAllAnimations()
-            self.delegate?.slidingAnimationController(self, didFinishSwipeAwayAnimation: true)
+            notifyDidPerformSlidingActionEvent()
         }
         addTranslationAnimation(swipeAway: direction, translation: translation)
         addRotationAnimation(angle: angle)
@@ -54,7 +55,7 @@ fileprivate extension SlidingAnimationController {
         let translationAnimation = CABasicAnimation.init(keyPath: keyPath)
         let toValue = (direction == .toTop) ? Double(translation.y) : Double(translation.x)
         translationAnimation.toValue = toValue
-        translationAnimation.duration = 0.5
+        translationAnimation.duration = 0.25
         translationAnimation.fillMode = .forwards
         translationAnimation.isRemovedOnCompletion = false
         translationAnimation.timingFunction = CAMediaTimingFunction.init(name: .easeInEaseOut)
@@ -64,7 +65,7 @@ fileprivate extension SlidingAnimationController {
      func addRotationAnimation(angle: CGFloat) {
         let rotationAnimation = CABasicAnimation.init(keyPath: "transform.rotation.z")
         rotationAnimation.toValue = angle * CGFloat.pi / 180
-        rotationAnimation.duration = 0.5
+        rotationAnimation.duration = 0.25
         cardView?.layer.add(rotationAnimation, forKey: "rotation")
     }
     
@@ -119,18 +120,34 @@ extension SlidingAnimationController {
         
         switch direction {
         case .toLeft:
+            notifyWillPerformSlidingActionEvent(with: direction)
             performSwipAnimation(swipeAway: .toLeft, translation: direction.swipeAwayTranslationValue, angle: 15)
         case .toRight:
+            notifyWillPerformSlidingActionEvent(with: direction)
             performSwipAnimation(swipeAway: .toRight, translation: direction.swipeAwayTranslationValue, angle: -15)
         case .toTop:
+            notifyWillPerformSlidingActionEvent(with: direction)
             performSwipAnimation(swipeAway: .toTop, translation: direction.swipeAwayTranslationValue)
         case .backToIdentity:
+            notifyBackToIdentity()
             UIView.animate(withDuration: 0.75, delay: 0, usingSpringWithDamping: 0.6, initialSpringVelocity: 0.1, options: .curveEaseOut) {[unowned self] in
                 self.cardView?.transform = .identity
             }
         }
-        
-        let slideEvent = ObservableEvents.CardViewEvents.SlidingEvent(status: .performSlidingAction, translation: direction.swipeAwayTranslationValue)
-        ObservableSlidingAnimation.shared.notify(with: slideEvent)
+    }
+    
+    private func notifyBackToIdentity() {
+        let event = ObservableEvents.CardViewEvents.SlidingEvent(status: .willDoBackToIdentity, translation: .init(x: 0, y: 0))
+        ObservableSlidingAnimation.shared.notify(with: event)
+    }
+    
+    private func notifyWillPerformSlidingActionEvent(with direction: SlidingDirection) {
+        let event = ObservableEvents.CardViewEvents.SlidingEvent(status: .willDoSwipeAction, translation: direction.swipeAwayTranslationValue)
+        ObservableSlidingAnimation.shared.notify(with: event)
+    }
+    
+    private func notifyDidPerformSlidingActionEvent() {
+        let event = ObservableEvents.CardViewEvents.SlidingEvent(status: .didDoSwipeAction, translation: .init(x: 0, y: 0))
+        ObservableSlidingAnimation.shared.notify(with: event)
     }
 }
