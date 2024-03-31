@@ -77,7 +77,7 @@ public class CardDeskViewController: UIViewController {
     
     private func setupLayout() {
         view.addSubview(cardViewControlBar)
-        cardViewControlBar.constraint(bottom: view.snp.bottom, centerX: view.snp.centerX, padding: .init(top: 0, left: 0, bottom: 16, right: 0))
+        cardViewControlBar.constraint(bottom: view.snp.bottom, centerX: view.snp.centerX, padding: .init(top: 0, left: 0, bottom: 24, right: 0))
     }
 }
 
