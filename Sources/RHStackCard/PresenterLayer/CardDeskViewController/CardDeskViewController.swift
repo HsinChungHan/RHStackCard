@@ -58,6 +58,9 @@ public class CardDeskViewController: UIViewController {
         view.addGestureRecognizer(panGestureRecognizer)
         viewModel.addCards(with: _cards)
         setupLayout()
+        
+        addObserver(with: slidingEventObserver)
+        bindEvent()
     }
     
     public func registerCardViewType(withCardViewID cardViewID: String, cardViewType: CardView.Type) {
@@ -137,12 +140,23 @@ extension CardDeskViewController {
 }
 
 extension CardDeskViewController: CardDeskViewViewModelDelegate {
-    func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, didDistributeCardView cardView: CardView) {
-        cardView.delegate = self
-        view.insertSubview(cardView, at: 0)
-        cardView.fillSuperView()
+    func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, didDistributCardViewForSingleCard singleCardView: CardView) {
+        if !view.subviews.contains(where: { $0 === singleCardView }) {
+            singleCardView.delegate = self
+            view.insertSubview(singleCardView, at: 0)
+            singleCardView.fillSuperView()
+        }
         taskManager.markCurrentTaskAsFinished()
-
+    }
+    
+    func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, didDistributCardViewsForAddedCards presentingCardViews: [CardView]) {
+        presentingCardViews.forEach { cardView1 in
+            if !view.subviews.contains(where: { $0 === cardView1 }) {
+                cardView1.delegate = self
+                view.insertSubview(cardView1, at: 0)
+                cardView1.fillSuperView()
+            }
+        }
     }
     
     func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, didGenerateAllCards: Bool) {
@@ -162,11 +176,6 @@ extension CardDeskViewController: CardViewDelegate {
         case .stillIncludeIndex:
             ImpactFeedbackController.startImpactFeedback(with: .medium)
         }
-    }
-    
-    public func cardView(_ cardView: CardView, didRemoveCardViewFromSuperView: Bool) {
-        if !didRemoveCardViewFromSuperView { return }
-//        viewModel.popCardView()
     }
 }
 
@@ -205,22 +214,25 @@ extension CardDeskViewController: SlidingAnimationControllerDataSource {
 }
 
 extension CardDeskViewController: SlidingAnimationControllerDelegate {
+    func slidingAnimationController(_ slidingAnimationController: SlidingAnimationController, cardViewDidPerformSwipeActionAnimation direction: SlidingDirection) {
+        view.isUserInteractionEnabled = true
+        if direction != .backToIdentity {
+            viewModel.popCardView()
+        }
+    }
+    
     func slidingAnimationController(_ slidingAnimationController: SlidingAnimationController, didSlideChanged direction: SlidingDirection, withTransaltion translation: CGPoint) {
         let cardView = slidingAnimationController.cardView
         cardView?.viewModel.didSlideCahnged(with: direction, withTransaltion: translation)
     }
         
     func slidingAnimationController(_ slidingAnimationController: SlidingAnimationController, willPerformCardViewAction direction: SlidingDirection) {
+        view.isUserInteractionEnabled = false
         let cardView = slidingAnimationController.cardView
         switch direction {
         case .backToIdentity:
             cardView?.setActionLabelsToBeTransparent()
         default: break
         }
-    }
-    
-    func slidingAnimationController(_ slidingAnimationController: SlidingAnimationController, didFinishSwipeAwayAnimation: Bool) {
-        if !didFinishSwipeAwayAnimation { return }
-        viewModel.popCardView()
     }
 }

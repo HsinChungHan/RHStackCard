@@ -16,7 +16,7 @@ protocol SlidingAnimationControllerDelegate: AnyObject {
         
     func slidingAnimationController(_ slidingAnimationController: SlidingAnimationController, willPerformCardViewAction direction: SlidingDirection)
     
-    func slidingAnimationController(_ slidingAnimationController: SlidingAnimationController, didFinishSwipeAwayAnimation: Bool)
+    func slidingAnimationController(_ slidingAnimationController: SlidingAnimationController, cardViewDidPerformSwipeActionAnimation direction: SlidingDirection)
 }
 
 class SlidingAnimationController {
@@ -39,10 +39,11 @@ fileprivate extension SlidingAnimationController {
     func performSwipAnimation(swipeAway direction: SlidingDirection, translation: CGPoint, angle: CGFloat = 0, completionHandler: (() -> Void)? = nil) {
         CATransaction.setCompletionBlock {[weak self] in
             guard let self, let cardView = self.cardView else { return }
-            self.delegate?.slidingAnimationController(self, didFinishSwipeAwayAnimation: true)
+            
             cardView.removeFromSuperview()
             cardView.transform = .identity
             cardView.layer.removeAllAnimations()
+            self.delegate?.slidingAnimationController(self, cardViewDidPerformSwipeActionAnimation: direction)
             notifyDidPerformSlidingActionEvent()
         }
         addTranslationAnimation(swipeAway: direction, translation: translation)
@@ -117,7 +118,6 @@ extension SlidingAnimationController {
     }
     
     func performCardViewActionAnimation(with direction: SlidingDirection) {
-        
         switch direction {
         case .toLeft:
             notifyWillPerformSlidingActionEvent(with: direction)
@@ -130,8 +130,11 @@ extension SlidingAnimationController {
             performSwipAnimation(swipeAway: .toTop, translation: direction.swipeAwayTranslationValue)
         case .backToIdentity:
             notifyBackToIdentity()
-            UIView.animate(withDuration: 0.75, delay: 0, usingSpringWithDamping: 0.6, initialSpringVelocity: 0.1, options: .curveEaseOut) {[unowned self] in
+            UIView.animate(withDuration: 0.75, delay: 0, usingSpringWithDamping: 0.6, initialSpringVelocity: 0.1, options: .curveEaseInOut) {
                 self.cardView?.transform = .identity
+            } completion: { _ in
+                guard let cardView = self.cardView else { return }
+                self.delegate?.slidingAnimationController(self, cardViewDidPerformSwipeActionAnimation: direction)
             }
         }
     }

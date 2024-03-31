@@ -17,15 +17,15 @@ protocol CardViewsManagerUseCaseProtocol: AnyObject {
 }
 
 protocol CardViewsManagerUseCaseDelegate: AnyObject {
-    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, withAddedCards cards: [Card])
+    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didDistributeCardViews presentingCardViews: [CardView], forAddedCards cards: [Card])
     
-    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didDistributeCardView: Bool, cardView: CardView, card: Card)
+    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didDistributeCardView cardView: CardView, forSingleCard card: Card)
 
     func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didGenerateAllCards: Bool)
 }
 
 class CardViewsManagerUseCase: NSObject, CardViewsManagerUseCaseProtocol {
-    enum CardImageSourceType {
+    private enum CardImageSourceType {
         case fromAsset
         case fromURL
         
@@ -34,13 +34,13 @@ class CardViewsManagerUseCase: NSObject, CardViewsManagerUseCaseProtocol {
         }
     }
     
-    let MAX_PRESENTATION_CARDS = 3
+    private let MAX_PRESENTATION_CARDS = 3
     var presentingCardViews = [CardView]()
-    var cardViewsPool = [String: [CardView]]()
+    private var cardViewsPool = [String: [CardView]]()
     
-    var cards = [any Card]()
-    lazy var presentingCards = [any Card]()
-    var popedCards = [any Card]()
+    private var cards = [any Card]()
+    private lazy var presentingCards = [any Card]()
+    private var popedCards = [any Card]()
     
     weak var _delegate: CardViewsManagerUseCaseDelegate?
     var delegate: CardViewsManagerUseCaseDelegate? {
@@ -52,6 +52,14 @@ class CardViewsManagerUseCase: NSObject, CardViewsManagerUseCaseProtocol {
         self.delegate = delegate
     }
     
+    override var description: String {
+        let cardViewsInfo = presentingCardViews.map { $0.uid }
+        return "cardViewsInfo: \(cardViewsInfo)"
+    }
+}
+
+// MARK: - Internal Methods
+extension CardViewsManagerUseCase {
     func updateCardURLImages(with imageData: Data, at index: Int, for card: Card) {
         self.presentingCardViews.forEach {
             if $0.card?.uid == card.uid {
@@ -63,36 +71,8 @@ class CardViewsManagerUseCase: NSObject, CardViewsManagerUseCaseProtocol {
     func addNewCards(with cards: [Card]) {
         initCardViewsPool(with: cards)
         self.cards += cards
-        distributeCardView()
-        delegate?.cardViewsManager(self, withAddedCards: cards)
-    }
-    
-    private func initCardViewsPool(with cards: [Card]) {
-        var cardViewTypeIDs = Set<String>()
-        cards.forEach {
-            cardViewTypeIDs.insert($0.cardViewTypeName)
-        }
-        
-        for cardViewTypeID in cardViewTypeIDs {
-            cardViewsPool[cardViewTypeID] = [
-                CardViewTypeManager.type(ofCardViewID: cardViewTypeID)!.init(uid: "0"),
-                CardViewTypeManager.type(ofCardViewID: cardViewTypeID)!.init(uid: "1"),
-                CardViewTypeManager.type(ofCardViewID: cardViewTypeID)!.init(uid: "2"),
-            ]
-        }
-    }
-    
-    private func distributeCardView() {
-        while !cards.isEmpty && presentingCardViews.count < MAX_PRESENTATION_CARDS {
-            let targetCard = cards.removeFirst()
-            let targetCardViewType = targetCard.cardViewTypeName
-            let targetCardView = cardViewsPool[targetCardViewType]!.removeFirst()
-            
-            setupCardView(with: targetCard, on: targetCardView)
-            presentingCardViews.append(targetCardView)
-            presentingCards.append(targetCard)
-            delegate?.cardViewsManager(self, didDistributeCardView: true, cardView: targetCardView, card: targetCard)
-        }
+        distributeCardViews()
+        delegate?.cardViewsManager(self, didDistributeCardViews: presentingCardViews, forAddedCards: cards)
     }
     
     func popCardView() {
@@ -106,21 +86,43 @@ class CardViewsManagerUseCase: NSObject, CardViewsManagerUseCaseProtocol {
             delegate?.cardViewsManager(self, didGenerateAllCards: true)
             return
         }
-        distributeCardView()
+        distributeCardViews()
+    }
+}
+
+// MARK: - Helpers
+
+private extension CardViewsManagerUseCase {
+    func initCardViewsPool(with cards: [Card]) {
+        var cardViewTypeIDs = Set<String>()
+        cards.forEach {
+            cardViewTypeIDs.insert($0.cardViewTypeName)
+        }
+        
+        for cardViewTypeID in cardViewTypeIDs {
+            cardViewsPool[cardViewTypeID] = (0...2).map { CardViewTypeManager.type(ofCardViewID: cardViewTypeID)!.init(uid: "\($0)") }
+        }
     }
     
-    private func setupCardView(with card: Card, on cardView: CardView) {
+    func distributeCardViews() {
+        while !cards.isEmpty && presentingCardViews.count < MAX_PRESENTATION_CARDS {
+            let targetCard = cards.removeFirst()
+            let targetCardViewType = targetCard.cardViewTypeName
+            let targetCardView = cardViewsPool[targetCardViewType]!.removeFirst()
+            
+            setupCardView(with: targetCard, on: targetCardView)
+            presentingCardViews.append(targetCardView)
+            presentingCards.append(targetCard)
+            delegate?.cardViewsManager(self, didDistributeCardView: targetCardView, forSingleCard: targetCard)
+        }
+    }
+    
+    func setupCardView(with card: Card, on cardView: CardView) {
         switch CardImageSourceType.getType(with: card) {
         case .fromAsset:
             cardView.setupImageNamesCard(with: card)
         case .fromURL:
             cardView.setupImageURLsCard(with: card)
-
         }
-    }
-    
-    override var description: String {
-        let cardViewsInfo = presentingCardViews.map { $0.uid }
-        return "cardViewsInfo: \(cardViewsInfo)"
     }
 }

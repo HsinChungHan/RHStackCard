@@ -8,7 +8,9 @@
 import UIKit
 
 protocol CardDeskViewViewModelDelegate: AnyObject {
-    func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, didDistributeCardView cardView: CardView)
+    func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, didDistributCardViewsForAddedCards presentingCardViews: [CardView])
+    func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, didDistributCardViewForSingleCard singleCardView: CardView)
+    
     func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, didGenerateAllCards: Bool)
 }
 
@@ -19,30 +21,9 @@ class CardDeskViewViewModel {
     private lazy var imageRepository = ImageRepository.init(imageNetworkService: ImageNetworkService(domainURL: domainURL), imageStoreService: ImageStoreService())
     private lazy var loadCardImagesUseCase: LoadCardImagesUseCase = LoadCardImagesUseCase(imageRepository: imageRepository)
     
-    private lazy var slidingEventObserver = SlidingEventObserver()
-    
     let domainURL: URL?
     init(domainURL: URL?) {
         self.domainURL = domainURL
-        addObserver(with: slidingEventObserver)
-        bindEvent()
-    }
-    
-    private func addObserver(with slidingEventObserver: SlidingEventObserver) {
-        ObservableSlidingAnimation.shared.addObserver(slidingEventObserver)
-    }
-    
-    private func bindEvent() {
-        slidingEventObserver.didUpdateValue = { [weak self] event in
-            guard let self else { return }
-            switch event.status {
-            case .performSlidingAction:
-//                cardViewsManager.presentingCardViews.first?.isUserInteractionEnabled = false
-                return
-            default:
-                return
-            }
-        }
     }
 }
 
@@ -94,13 +75,14 @@ private extension CardDeskViewViewModel {
 }
 
 extension CardDeskViewViewModel: CardViewsManagerUseCaseDelegate {
-    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, withAddedCards cards: [Card]) {
-        loadImages(with: cards)
+    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didDistributeCardView cardView: CardView, forSingleCard card: Card) {
+        loadImage(with: card)
+        delegate?.cardDeskViewViewModel(self, didDistributCardViewForSingleCard: cardView)
     }
     
-    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didDistributeCardView: Bool, cardView: CardView, card: Card) {
-        loadImage(with: card)
-        delegate?.cardDeskViewViewModel(self, didDistributeCardView: cardView)
+    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didDistributeCardViews presentingCardViews: [CardView], forAddedCards cards: [Card]) {
+        loadImages(with: cards)
+        delegate?.cardDeskViewViewModel(self, didDistributCardViewsForAddedCards: cardViews)
     }
     
     func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didGenerateAllCards: Bool) {

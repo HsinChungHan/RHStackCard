@@ -9,8 +9,7 @@ import RHInterface
 import RHUIComponent
 import UIKit
 
-public protocol CardViewDelegate: AnyObject {
-    func cardView(_ cardView: CardView, didRemoveCardViewFromSuperView: Bool)
+public protocol CardViewDelegate: AnyObject {    
     func cardView(_ cardView: CardView, didTapOutOfIndex direction: CardViewViewModel.OutOfIndexDirection)
 }
 
@@ -218,33 +217,6 @@ extension CardView {
         leftLabel.alpha = 0.0
         rightLabel.alpha = 0.0
         topLabel.alpha = 0.0
-    }
-}
-
-// MARK: - SlidingAnimationControllerDataSource
-extension CardView: SlidingAnimationControllerDataSource {
-    var cardView: CardView? { self }
-}
-
-// MARK: - SlidingAnimationControllerDelegate
-extension CardView: SlidingAnimationControllerDelegate {
-    func slidingAnimationController(_ SlidingAnimationController: SlidingAnimationController, didSlideChanged direction: SlidingDirection, withTransaltion translation: CGPoint) {
-        viewModel.didSlideCahnged(with: direction, withTransaltion: translation)
-    }
-        
-    func slidingAnimationController(_ SlidingAnimationController: SlidingAnimationController, willPerformCardViewAction direction: SlidingDirection) {
-        switch direction {
-        case .backToIdentity:
-            [rightLabel, leftLabel, topLabel].forEach {
-                $0.alpha = 0.0
-            }
-        default: break
-        }
-    }
-    
-    func slidingAnimationController(_ SlidingAnimationController: SlidingAnimationController, didFinishSwipeAwayAnimation: Bool) {
-        if !didFinishSwipeAwayAnimation { return }
-        delegate?.cardView(self, didRemoveCardViewFromSuperView: true)
     }
 }
 
