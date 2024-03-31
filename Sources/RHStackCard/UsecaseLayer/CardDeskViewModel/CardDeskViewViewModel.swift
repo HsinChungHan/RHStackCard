@@ -21,6 +21,7 @@ class CardDeskViewViewModel {
     private lazy var imageRepository = ImageRepository.init(imageNetworkService: ImageNetworkService(domainURL: domainURL), imageStoreService: ImageStoreService())
     private lazy var loadCardImagesUseCase: LoadCardImagesUseCase = LoadCardImagesUseCase(imageRepository: imageRepository)
     
+    let scaleSizeManager = ScaleSizeAnimationController()
     let domainURL: URL?
     init(domainURL: URL?) {
         self.domainURL = domainURL
@@ -78,11 +79,13 @@ extension CardDeskViewViewModel: CardViewsManagerUseCaseDelegate {
     func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didDistributeCardView cardView: CardView, forSingleCard card: Card) {
         loadImage(with: card)
         delegate?.cardDeskViewViewModel(self, didDistributCardViewForSingleCard: cardView)
+        scaleSizeManager.presentingCardViews = cardViewsManager.presentingCardViews
     }
     
     func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didDistributeCardViews presentingCardViews: [CardView], forAddedCards cards: [Card]) {
         loadImages(with: cards)
         delegate?.cardDeskViewViewModel(self, didDistributCardViewsForAddedCards: cardViews)
+        scaleSizeManager.presentingCardViews = presentingCardViews
     }
     
     func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didGenerateAllCards: Bool) {
