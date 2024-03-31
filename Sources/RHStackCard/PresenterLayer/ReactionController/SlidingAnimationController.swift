@@ -55,7 +55,11 @@ fileprivate extension SlidingAnimationController {
         let translationAnimation = CABasicAnimation.init(keyPath: keyPath)
         let toValue = (direction == .toTop) ? Double(translation.y) : Double(translation.x)
         translationAnimation.toValue = toValue
-        translationAnimation.duration = 0.25
+        if direction == .toTop {
+            translationAnimation.duration = 0.35
+        } else {
+            translationAnimation.duration = 0.25
+        }
         translationAnimation.fillMode = .forwards
         translationAnimation.isRemovedOnCompletion = false
         translationAnimation.timingFunction = CAMediaTimingFunction.init(name: .easeInEaseOut)

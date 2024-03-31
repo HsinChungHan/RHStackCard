@@ -46,7 +46,7 @@ public enum SlidingDirection {
         case .toRight:
             return .init(x: 700, y: 0)
         case .toTop:
-            return .init(x: 0, y: -300)
+            return .init(x: 0, y: -700)
         case .toLeft:
             return .init(x: -300, y: 0)
         case .backToIdentity, .none:
