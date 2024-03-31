@@ -69,7 +69,9 @@ public struct ObservableEvents {
         public enum Status {
             case sliding
             case endSlide
-            case performSlidingAction
+            case willDoSwipeAction
+            case willDoBackToIdentity
+            case didDoSwipeAction
         }
         
         public struct SlidingEvent {
