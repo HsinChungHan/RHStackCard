@@ -1,7 +1,8 @@
+<div align="center">
+    <img src="https://github.com/HsinChungHan/RHStackCard/assets/38360195/812a03a0-3d45-4432-be86-6613c0e0d8cc" alt="截圖 2024-04-11 晚上9 57 52">
+</div>
+
 # RHStackCard
-
-
-![截圖 2024-04-11 晚上9 57 52](https://github.com/HsinChungHan/RHStackCard/assets/38360195/812a03a0-3d45-4432-be86-6613c0e0d8cc)
 RHStackCard is a highly customizable card stack view library built for iOS applications. It supports displaying various types of card views and can precisely monitor user swipe actions.
 <table>
   <tr>
