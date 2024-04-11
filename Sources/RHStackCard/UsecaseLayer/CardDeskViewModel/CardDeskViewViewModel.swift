@@ -21,10 +21,9 @@ protocol CardDeskViewViewModelDelegate: AnyObject {
 
 class CardDeskViewViewModel {
     weak var delegate: CardDeskViewViewModelDelegate?
-    private lazy var cardViewsManager = CardViewsManagerUseCase.init(delegate: self)
+    private lazy var cardViewsManager: CardViewsManagerUseCaseProtocol = CardViewsManagerUseCase.init(delegate: self)
     
-    private lazy var imageRepository = ImageRepository.init(imageNetworkService: ImageNetworkService(domainURL: domainURL), imageStoreService: ImageStoreService())
-    private lazy var loadCardImagesUseCase: LoadCardImagesUseCase = LoadCardImagesUseCase(imageRepository: imageRepository)
+    private lazy var loadCardImagesUseCase: LoadCardImagesUseCaseProtocol = makeLoadCardImagesUseCase()
     
     let scaleSizeManager = ScaleSizeAnimationController()
     let taskManager = TaskManager()
@@ -119,6 +118,14 @@ private extension CardDeskViewViewModel {
             guard let self else { return }
             self.delegate?.cardDeskViewViewModel(self, didReciveCardViewSlidingEvent: event)
         }
+    }
+}
+
+// MARK: - Factory Methods
+extension CardDeskViewViewModel {
+    private func makeLoadCardImagesUseCase() -> LoadCardImagesUseCaseProtocol {
+        let imageRepository: ImageRepositoryProtocol = ImageRepository.init(imageNetworkService: ImageNetworkService(domainURL: domainURL), imageStoreService: ImageStoreService())
+        return LoadCardImagesUseCase(imageRepository: imageRepository)
     }
 }
 
