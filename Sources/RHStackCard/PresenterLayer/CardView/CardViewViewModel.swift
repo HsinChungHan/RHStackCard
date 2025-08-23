@@ -42,7 +42,7 @@ extension CardViewViewModel {
         public static let hidden = ActionHintState(leftAlpha: 0, rightAlpha: 0, topAlpha: 0)
     }
     
-    /// 手勢滑動即時回報，VM 產生對應的提示狀態
+    /// slide the card with update translation
     func didSlideChanged(direction: SlidingDirection, translation: CGPoint) {
         let tx = translation.x
         let ty = translation.y
@@ -65,6 +65,25 @@ extension CardViewViewModel {
             state = .hidden
         }
         
+        delegate?.cardViewViewModel(self, didUpdateActionHint: state)
+    }
+    
+    /// Swipe away the card
+    func didSwipeAway(direction: SlidingDirection) {
+        var state: ActionHintState = .hidden
+        switch direction {
+        case .toTop:
+            state = ActionHintState(leftAlpha: 0, rightAlpha: 0, topAlpha: 1)
+            
+        case .toRight:
+            state = ActionHintState(leftAlpha: 0, rightAlpha: 1, topAlpha: 0)
+            
+        case .toLeft:
+            state = ActionHintState(leftAlpha: 1, rightAlpha: 0, topAlpha: 0)
+            
+        case .backToIdentity, .none:
+            state = .hidden
+        }
         delegate?.cardViewViewModel(self, didUpdateActionHint: state)
     }
     

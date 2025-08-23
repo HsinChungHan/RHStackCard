@@ -61,6 +61,67 @@ open class CardView: UIView {
     }
 }
 
+// MARK: - Intenal APIs
+extension CardView {
+    typealias CardViewDirection = SlidingDirection
+    func swipe(to direction: CardViewDirection) {
+        viewModel.didSwipeAway(direction: direction)
+    }
+    
+    func setCurrentPhotoIndex(shouldAdvanceNextPhoto: Bool) {
+        viewModel.setCurrentPhotoIndex(shouldAdvanceNextPhoto: shouldAdvanceNextPhoto)
+    }
+    
+    func setupImageNamesCard<T: Card>(with card: T) {
+        viewModel.setupImageNamesCard(with: card)
+    }
+    
+    func reset() {
+        viewModel.reset()
+    }
+    
+    func setupImageURLsCard<T: Card>(with card: T) {
+        viewModel.setupImageURLsCard(with: card)
+    }
+    
+    func updateCardImage(with imageData: Data, at index: Int) {
+        viewModel.updateImage(with: imageData, at: index)
+    }
+    
+    func setActionLabelsToBeTransparent() {
+        leftLabel.alpha = 0.0
+        rightLabel.alpha = 0.0
+        topLabel.alpha = 0.0
+    }
+}
+
+// MARK: - CardViewViewModelDelegate
+extension CardView: CardViewViewModelDelegate {
+    public func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didResetCardView: Bool) {
+        guard didResetCardView else { return }
+        indexBarStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+    }
+    
+    public func cardViewViewModel(_ vm: CardViewViewModel, didUpdateActionHint state: CardViewViewModel.ActionHintState) {
+        leftLabel.alpha  = state.leftAlpha
+        rightLabel.alpha = state.rightAlpha
+        topLabel.alpha   = state.topAlpha
+    }
+    
+    public func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didInitImages images: [UIImage]) {
+        initIndexBar(with: images.count)
+    }
+    
+    public func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didTapOutOfIndex direction: CardViewViewModel.OutOfIndexDirection) {
+        delegate?.cardView(self, didTapOutOfIndex: direction)
+    }
+    
+    public func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didUpdateCurrentImage image: UIImage, withCurrentImageIndex index: Int) {
+        imageView.image = image
+        updateIndexBar(with: index)
+    }
+}
+
 // MARK: - Layouts
 private extension CardView {
     func setupViewLayout() {
@@ -176,77 +237,5 @@ fileprivate extension CardView {
         view.clipsToBounds = true
         view.alpha = 0.0
         return view
-    }
-}
-
-// MARK: - Intenal methods
-extension CardView {
-    typealias CardViewDirection = SlidingDirection
-    func swipe(to direction: CardViewDirection) {
-        switch direction {
-        case .toLeft:
-            leftLabel.alpha = 1.0
-        case .toRight:
-            rightLabel.alpha = 1.0
-        case .toTop:
-            topLabel.alpha = 1.0
-        case .backToIdentity, .none:
-            topLabel.alpha = 0.0
-            leftLabel.alpha = 0.0
-            rightLabel.alpha = 0.0
-        }
-    }
-    
-    func setCurrentPhotoIndex(shouldAdvanceNextPhoto: Bool) {
-        viewModel.setCurrentPhotoIndex(shouldAdvanceNextPhoto: shouldAdvanceNextPhoto)
-    }
-    
-    func setupImageNamesCard<T: Card>(with card: T) {
-        viewModel.setupImageNamesCard(with: card)
-    }
-    
-    func reset() {
-        viewModel.reset()
-    }
-    
-    func setupImageURLsCard<T: Card>(with card: T) {
-        viewModel.setupImageURLsCard(with: card)
-    }
-    
-    func updateCardImage(with imageData: Data, at index: Int) {
-        viewModel.updateImage(with: imageData, at: index)
-    }
-    
-    func setActionLabelsToBeTransparent() {
-        leftLabel.alpha = 0.0
-        rightLabel.alpha = 0.0
-        topLabel.alpha = 0.0
-    }
-}
-
-// MARK: - CardViewViewModelDelegate
-extension CardView: CardViewViewModelDelegate {
-    public func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didResetCardView: Bool) {
-        guard didResetCardView else { return }
-        indexBarStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
-    }
-    
-    public func cardViewViewModel(_ vm: CardViewViewModel, didUpdateActionHint state: CardViewViewModel.ActionHintState) {
-        leftLabel.alpha  = state.leftAlpha
-        rightLabel.alpha = state.rightAlpha
-        topLabel.alpha   = state.topAlpha
-    }
-    
-    public func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didInitImages images: [UIImage]) {
-        initIndexBar(with: images.count)
-    }
-    
-    public func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didTapOutOfIndex direction: CardViewViewModel.OutOfIndexDirection) {
-        delegate?.cardView(self, didTapOutOfIndex: direction)
-    }
-    
-    public func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didUpdateCurrentImage image: UIImage, withCurrentImageIndex index: Int) {
-        imageView.image = image
-        updateIndexBar(with: index)
     }
 }
