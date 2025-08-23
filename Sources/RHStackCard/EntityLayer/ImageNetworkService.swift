@@ -21,7 +21,7 @@ class ImageNetworkService: ImageNetworkServiceProtocol {
     ]
     init(domainURL: URL?) {
         guard let domainURL else { return }
-        networkAPI = factory.makeNonCacheClient(with: domainURL, headers: headers)
+        networkAPI = factory.makeNonCacheAndNoneUploadProgressClient(with: domainURL, headers: headers)
     }
     
     func downloadImage(with path: String, completion: @escaping (Result<Data, Error>) -> Void) {
