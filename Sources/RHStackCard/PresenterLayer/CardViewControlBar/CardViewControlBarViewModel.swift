@@ -5,7 +5,7 @@
 //  Created by Chung Han Hsin on 2025/8/23.
 //
 
-import UIKit
+import Foundation
 
 public protocol CardViewControlBarViewModelDelegate: AnyObject {
     func controlBarVM(_ vm: CardViewControlBarViewModel, didUpdate state: CardViewControlBarViewModel.State)
