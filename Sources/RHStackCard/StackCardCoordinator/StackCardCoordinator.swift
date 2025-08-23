@@ -7,7 +7,7 @@
 
 import UIKit
 
-public class CardViewComponentsFactory {
+public class StackCardCoordinator {
     public init() {}
     
     public func makeCardDeskViewController(with dataSource: CardDeskViewControllerDataSource, in superViewController: UIViewController) -> CardDeskViewController {
