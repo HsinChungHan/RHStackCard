@@ -71,7 +71,7 @@ public class CardDeskViewController: UIViewController {
     private func bindEvent() {
         slidingEventObserver.didUpdateValue = { [weak self] event in
             guard let self else { return }
-            self.cardViewControlBar.handleSlideBehaviorLabelAlpha(with: event)
+            self.cardViewControlBar.handle(slidingEvent: event)
         }
     }
     
@@ -125,7 +125,7 @@ extension CardDeskViewController {
 // MARK: - CardDeskViewViewModelDelegate
 extension CardDeskViewController: CardDeskViewViewModelDelegate {
     func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, didReciveCardViewSlidingEvent event: ObservableEvents.CardViewEvents.SlidingEvent) {
-        cardViewControlBar.handleSlideBehaviorLabelAlpha(with: event)
+        cardViewControlBar.handle(slidingEvent: event)
     }
     
     func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, willPerformCardViewAction direction: SlidingDirection) {
