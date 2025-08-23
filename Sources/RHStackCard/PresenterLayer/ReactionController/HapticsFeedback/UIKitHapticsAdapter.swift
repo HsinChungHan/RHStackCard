@@ -7,15 +7,6 @@
 
 import UIKit
 
-public enum HapticStyle {
-    case light, medium, heavy, rigid, soft
-}
-
-public protocol HapticsPort {
-    func prepare(_ style: HapticStyle)
-    func impact(_ style: HapticStyle, intensity: Float?)
-}
-
 public final class UIKitHapticsAdapter: HapticsPort {
     private var cache: [UIImpactFeedbackGenerator.FeedbackStyle: UIImpactFeedbackGenerator] = [:]
 

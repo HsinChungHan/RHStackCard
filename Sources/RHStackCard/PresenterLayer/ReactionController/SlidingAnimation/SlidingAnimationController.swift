@@ -7,59 +7,6 @@
 
 import UIKit
 
-/// Gesture phase independent of UIKit.
-public enum SlidingPanPhase: Equatable {
-    case began, changed, ended, cancelled, failed
-}
-
-/// Pan event payload passed into the animator.
-public struct SlidingPanEvent: Equatable {
-    public let phase: SlidingPanPhase
-    public let translation: CGPoint
-    public let velocity: CGPoint
-    public init(phase: SlidingPanPhase, translation: CGPoint, velocity: CGPoint) {
-        self.phase = phase
-        self.translation = translation
-        self.velocity = velocity
-    }
-}
-
-public extension SlidingPanPhase {
-    init(_ state: UIGestureRecognizer.State) {
-        switch state {
-        case .began:     
-            self = .began
-        case .changed:   
-            self = .changed
-        case .ended:     
-            self = .ended
-        case .cancelled: 
-            self = .cancelled
-        case .failed:    
-            self = .failed
-        default:         
-            self = .failed
-        }
-    }
-}
-
-public extension SlidingPanEvent {
-    init(gesture: UIPanGestureRecognizer, in view: UIView) {
-        let t = gesture.translation(in: view)
-        let v = gesture.velocity(in: view)
-        self.init(
-            phase: SlidingPanPhase(gesture.state),
-            translation: CGPoint(x: t.x, y: t.y),
-            velocity: CGPoint(x: v.x, y: v.y)
-        )
-    }
-}
-
-public protocol SlidingAnimating: AnyObject {
-    func handlePan(_ event: SlidingPanEvent)
-    func performAction(_ direction: SlidingDirection)
-}
-
 protocol SlidingAnimationControllerDataSource: AnyObject {
     var cardView: CardView? { get }
 }
@@ -202,5 +149,36 @@ extension SlidingAnimationController {
     private func notifyDidPerformSlidingActionEvent() {
         let event = ObservableEvents.CardViewEvents.SlidingEvent(status: .didDoSwipeAction, translation: .init(x: 0, y: 0))
         ObservableSlidingAnimation.shared.notify(with: event)
+    }
+}
+
+public extension SlidingPanPhase {
+    init(_ state: UIGestureRecognizer.State) {
+        switch state {
+        case .began:
+            self = .began
+        case .changed:
+            self = .changed
+        case .ended:
+            self = .ended
+        case .cancelled:
+            self = .cancelled
+        case .failed:
+            self = .failed
+        default:
+            self = .failed
+        }
+    }
+}
+
+public extension SlidingPanEvent {
+    init(gesture: UIPanGestureRecognizer, in view: UIView) {
+        let t = gesture.translation(in: view)
+        let v = gesture.velocity(in: view)
+        self.init(
+            phase: SlidingPanPhase(gesture.state),
+            translation: CGPoint(x: t.x, y: t.y),
+            velocity: CGPoint(x: v.x, y: v.y)
+        )
     }
 }
