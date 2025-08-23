@@ -7,6 +7,10 @@
 
 import UIKit
 
+protocol CardStackVibrationAnimating: AnyObject {
+    func doBriefVibration(angle: CGFloat)
+}
+
 protocol VibrationAnimationControllerDataSource: AnyObject {
     var targetView: UIView { get }
 }
@@ -15,7 +19,7 @@ protocol VibrationAnimationControllerDelegate: AnyObject {
     func vibrationAnimationController(_ vibrationAnimationController: VibrationAnimationController, didEndVibrationAnimation: Bool)
 }
 
-class VibrationAnimationController {
+class VibrationAnimationController: CardStackVibrationAnimating {
     let heavyGenerator = UIImpactFeedbackGenerator(style: .heavy)
     let mediumGenerator = UIImpactFeedbackGenerator(style: .medium)
     var tapAnimator: UIViewPropertyAnimator?
@@ -43,13 +47,13 @@ class VibrationAnimationController {
         
         animator.addAnimations {
             UIView.animateKeyframes(withDuration: 0.15, delay: 0, animations: {
-                   UIView.addKeyframe(withRelativeStartTime: 0, relativeDuration: 0.7) {
-                       view.layer.transform = rotatedTransform
-                   }
-                   UIView.addKeyframe(withRelativeStartTime: 0.7, relativeDuration: 0.3) {
-                       view.layer.transform = CATransform3DIdentity
-                   }
-               })
+                UIView.addKeyframe(withRelativeStartTime: 0, relativeDuration: 0.7) {
+                    view.layer.transform = rotatedTransform
+                }
+                UIView.addKeyframe(withRelativeStartTime: 0.7, relativeDuration: 0.3) {
+                    view.layer.transform = CATransform3DIdentity
+                }
+            })
         }
         
         animator.addCompletion { position in
