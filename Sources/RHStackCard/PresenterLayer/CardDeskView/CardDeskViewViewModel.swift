@@ -60,12 +60,13 @@ extension CardDeskViewViewModel {
     }
     
     func handlePan(gesture: UIPanGestureRecognizer) {
-        slidingAnimationController.handlePan(gesture: gesture)
+        guard let gestureOnView = gesture.view else { return }
+        slidingAnimationController.handlePan(.init(gesture: gesture, in: gestureOnView))
     }
     
     func doSwipeCardViewTask(with direction: SlidingDirection) {
         currentCardView?.swipe(to: direction)
-        slidingAnimationController.performCardViewActionAnimation(with: direction)
+        slidingAnimationController.performAction(direction)
     }
     
     func doCardViewControlBarEvent(slideAction: CardViewAction, cards: [Card]) {

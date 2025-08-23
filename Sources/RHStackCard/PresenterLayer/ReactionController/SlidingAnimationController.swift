@@ -7,6 +7,59 @@
 
 import UIKit
 
+/// Gesture phase independent of UIKit.
+public enum SlidingPanPhase: Equatable {
+    case began, changed, ended, cancelled, failed
+}
+
+/// Pan event payload passed into the animator.
+public struct SlidingPanEvent: Equatable {
+    public let phase: SlidingPanPhase
+    public let translation: CGPoint
+    public let velocity: CGPoint
+    public init(phase: SlidingPanPhase, translation: CGPoint, velocity: CGPoint) {
+        self.phase = phase
+        self.translation = translation
+        self.velocity = velocity
+    }
+}
+
+public extension SlidingPanPhase {
+    init(_ state: UIGestureRecognizer.State) {
+        switch state {
+        case .began:     
+            self = .began
+        case .changed:   
+            self = .changed
+        case .ended:     
+            self = .ended
+        case .cancelled: 
+            self = .cancelled
+        case .failed:    
+            self = .failed
+        default:         
+            self = .failed
+        }
+    }
+}
+
+public extension SlidingPanEvent {
+    init(gesture: UIPanGestureRecognizer, in view: UIView) {
+        let t = gesture.translation(in: view)
+        let v = gesture.velocity(in: view)
+        self.init(
+            phase: SlidingPanPhase(gesture.state),
+            translation: CGPoint(x: t.x, y: t.y),
+            velocity: CGPoint(x: v.x, y: v.y)
+        )
+    }
+}
+
+public protocol SlidingAnimating: AnyObject {
+    func handlePan(_ event: SlidingPanEvent)
+    func performAction(_ direction: SlidingDirection)
+}
+
 protocol SlidingAnimationControllerDataSource: AnyObject {
     var cardView: CardView? { get }
 }
@@ -31,6 +84,43 @@ class SlidingAnimationController {
     init(dataSource: SlidingAnimationControllerDataSource, delegate: SlidingAnimationControllerDelegate? = nil) {
         self.dataSource = dataSource
         self.delegate = delegate
+    }
+}
+
+// MARK: - Internal APIs
+extension SlidingAnimationController: SlidingAnimating {
+    func handlePan(_ event: SlidingPanEvent) {
+        switch event.phase {
+        case .began:
+            handlePanBegan(translation: event.translation, velocity: event.velocity)
+        case .changed:
+            handlePanChanged(translation: event.translation, velocity: event.velocity)
+        case .ended, .cancelled, .failed:
+            handlePanEnded(translation: event.translation, velocity: event.velocity)
+        }
+    }
+    
+    func performAction(_ direction: SlidingDirection) {
+        switch direction {
+        case .toLeft:
+            notifyWillPerformSlidingActionEvent(with: direction)
+            performSwipAnimation(swipeAway: .toLeft, translation: direction.swipeAwayTranslationValue, angle: 15)
+        case .toRight:
+            notifyWillPerformSlidingActionEvent(with: direction)
+            performSwipAnimation(swipeAway: .toRight, translation: direction.swipeAwayTranslationValue, angle: -15)
+        case .toTop:
+            notifyWillPerformSlidingActionEvent(with: direction)
+            performSwipAnimation(swipeAway: .toTop, translation: direction.swipeAwayTranslationValue)
+        case .backToIdentity:
+            notifyBackToIdentity()
+            UIView.animate(withDuration: 0.75, delay: 0, usingSpringWithDamping: 0.6, initialSpringVelocity: 0.1, options: .curveEaseInOut) {
+                self.cardView?.transform = .identity
+            } completion: { _ in
+                self.delegate?.slidingAnimationController(self, cardViewDidPerformSwipeActionAnimation: direction)
+            }
+        case .none:
+            return
+        }
     }
 }
 
@@ -73,14 +163,11 @@ fileprivate extension SlidingAnimationController {
         cardView?.layer.add(rotationAnimation, forKey: "rotation")
     }
     
-    func handleBegan(_ gesture: UIPanGestureRecognizer) {
+    func handlePanBegan(translation: CGPoint, velocity: CGPoint) {
         cardView?.layer.removeAllAnimations()
     }
-    
-    func handleChanged(_ gesture: UIPanGestureRecognizer) {
-//        print("x:\(cardView.frame.minX), y:\(cardView.frame.minY)")
-        let translation = gesture.translation(in: nil)
-        //convert degrees into radians
+
+    func handlePanChanged(translation: CGPoint, velocity: CGPoint) {
         let degrees: CGFloat = translation.x / 20
         let angle: CGFloat = -degrees * .pi / 180
         let rotationTransformation = CGAffineTransform.init(rotationAngle: angle)
@@ -91,59 +178,17 @@ fileprivate extension SlidingAnimationController {
         ObservableSlidingAnimation.shared.notify(with: slideEvent)
     }
     
-    func handleEnded(_ gesture: UIPanGestureRecognizer) {
-        let translationX = gesture.translation(in: nil).x
-        let translationY = gesture.translation(in: nil).y
-        let translation = CGPoint(x: translationX, y: translationY)
+    func handlePanEnded(translation: CGPoint, velocity: CGPoint) {
         let direction = SlidingDirection.getSwipeAwayDirection(with: translation)
-        
         let slideEvent = ObservableEvents.CardViewEvents.SlidingEvent(status: .endSlide, translation: translation)
         ObservableSlidingAnimation.shared.notify(with: slideEvent)
-        
-        performCardViewActionAnimation(with: direction)
+        performAction(direction)
         delegate?.slidingAnimationController(self, willPerformCardViewAction: direction)
     }
 }
 
-// MARK: - Internal methods
+// MARK: - Published events
 extension SlidingAnimationController {
-    func handlePan(gesture: UIPanGestureRecognizer){
-        switch gesture.state {
-        case .began:
-            handleBegan(gesture)
-        case .changed:
-            handleChanged(gesture)
-        case .ended:
-            handleEnded(gesture)
-        default:
-            return
-        }
-    }
-    
-    func performCardViewActionAnimation(with direction: SlidingDirection) {
-        switch direction {
-        case .toLeft:
-            notifyWillPerformSlidingActionEvent(with: direction)
-            performSwipAnimation(swipeAway: .toLeft, translation: direction.swipeAwayTranslationValue, angle: 15)
-        case .toRight:
-            notifyWillPerformSlidingActionEvent(with: direction)
-            performSwipAnimation(swipeAway: .toRight, translation: direction.swipeAwayTranslationValue, angle: -15)
-        case .toTop:
-            notifyWillPerformSlidingActionEvent(with: direction)
-            performSwipAnimation(swipeAway: .toTop, translation: direction.swipeAwayTranslationValue)
-        case .backToIdentity:
-            notifyBackToIdentity()
-            UIView.animate(withDuration: 0.75, delay: 0, usingSpringWithDamping: 0.6, initialSpringVelocity: 0.1, options: .curveEaseInOut) {
-                self.cardView?.transform = .identity
-            } completion: { _ in
-                self.delegate?.slidingAnimationController(self, cardViewDidPerformSwipeActionAnimation: direction)
-            }
-        case .none:
-            return
-        }
-     
-    }
-    
     private func notifyBackToIdentity() {
         let event = ObservableEvents.CardViewEvents.SlidingEvent(status: .willDoBackToIdentity, translation: .init(x: 0, y: 0))
         ObservableSlidingAnimation.shared.notify(with: event)
