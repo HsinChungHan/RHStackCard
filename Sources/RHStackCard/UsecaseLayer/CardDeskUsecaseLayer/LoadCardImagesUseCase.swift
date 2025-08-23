@@ -5,7 +5,7 @@
 //  Created by Chung Han Hsin on 2024/3/27.
 //
 
-import UIKit
+import Foundation
 
 protocol LoadCardImagesUseCaseProtocol {
     func loadCardImages(with card: Card, completion: @escaping (Result<(Int, Data), Error>) -> Void)

@@ -11,10 +11,9 @@ public protocol CardViewViewModelDelegate: AnyObject {
     func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didTapOutOfIndex direction: CardViewViewModel.OutOfIndexDirection)
     func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didUpdateCurrentImage image: UIImage, withCurrentImageIndex index: Int)
     func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didInitImages images: [UIImage])
-    
-    func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didSlideDirection direction: SlidingDirection, withLabelAlpha alpha: CGFloat)
-    
     func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didResetCardView: Bool)
+    func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didUpdateActionHint state: CardViewViewModel.ActionHintState)
+
 }
 
 open class CardViewViewModel {
@@ -32,6 +31,54 @@ open class CardViewViewModel {
     
     var images: [UIImage]? = nil
 }
+
+// MARK: - Sliding Action
+extension CardViewViewModel {
+    public struct ActionHintState {
+        public var leftAlpha: CGFloat
+        public var rightAlpha: CGFloat
+        public var topAlpha: CGFloat
+        
+        public static let hidden = ActionHintState(leftAlpha: 0, rightAlpha: 0, topAlpha: 0)
+    }
+    
+    /// 手勢滑動即時回報，VM 產生對應的提示狀態
+    func didSlideChanged(direction: SlidingDirection, translation: CGPoint) {
+        let tx = translation.x
+        let ty = translation.y
+        var state: ActionHintState = .hidden
+        
+        switch direction {
+        case .toTop:
+            let alpha = max(0, (-ty - abs(tx) * 1) / 100)
+            state = ActionHintState(leftAlpha: 0, rightAlpha: 0, topAlpha: alpha)
+            
+        case .toRight:
+            let alpha = max(0, tx / 100)
+            state = ActionHintState(leftAlpha: 0, rightAlpha: alpha, topAlpha: 0)
+            
+        case .toLeft:
+            let alpha = max(0, -tx / 100)
+            state = ActionHintState(leftAlpha: alpha, rightAlpha: 0, topAlpha: 0)
+            
+        case .backToIdentity, .none:
+            state = .hidden
+        }
+        
+        delegate?.cardViewViewModel(self, didUpdateActionHint: state)
+    }
+    
+    func reset() {
+        delegate?.cardViewViewModel(self, didUpdateActionHint: .hidden)
+        
+        card = nil
+        images?.removeAll()
+        currentImageIndex = nil
+        
+        delegate?.cardViewViewModel(self, didResetCardView: true)
+    }
+}
+
 
 // MARK: - Internal Methods
 extension CardViewViewModel {
@@ -59,31 +106,6 @@ extension CardViewViewModel {
         currentImageIndex = nextPhotoIndex
         delegate?.cardViewViewModel(self, didTapOutOfIndex: .stillIncludeIndex)
         delegate?.cardViewViewModel(self, didUpdateCurrentImage: images![currentImageIndex!], withCurrentImageIndex: currentImageIndex!)
-    }
-    
-    func didSlideCahnged(with direction: SlidingDirection, withTransaltion translation: CGPoint) {
-        let translationXDirection = translation.x
-        let translationYDirection = translation.y
-        var alpha: CGFloat = 0.0
-        switch direction {
-        case .toTop:
-            alpha = (-translationYDirection - abs(translationXDirection) * 1) / 100
-        case .toRight:
-            alpha = translationXDirection / 100
-        case .toLeft:
-            alpha = -translationXDirection / 100
-        case .backToIdentity, .none:
-            break
-        }
-        delegate?.cardViewViewModel(self, didSlideDirection: direction, withLabelAlpha: alpha)
-    }
-    
-    func reset() {
-        didSlideCahnged(with: .backToIdentity, withTransaltion: CGPoint(x: 0, y: 0))
-        card = nil
-        images?.removeAll()
-        currentImageIndex = nil
-        delegate?.cardViewViewModel(self, didResetCardView: true)
     }
     
     func setupImageNamesCard<T: Card>(with card: T) {

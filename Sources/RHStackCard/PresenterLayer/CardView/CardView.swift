@@ -5,7 +5,6 @@
 //  Created by Chung Han Hsin on 2024/3/22.
 //
 
-import RHInterface
 import RHUIComponent
 import UIKit
 
@@ -232,26 +231,10 @@ extension CardView: CardViewViewModelDelegate {
         indexBarStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
     }
     
-    public func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didSlideDirection direction: SlidingDirection, withLabelAlpha alpha: CGFloat) {
-        switch direction {
-        case .toTop:
-            topLabel.alpha = alpha
-            rightLabel.alpha = 0.0
-            leftLabel.alpha = 0.0
-            
-        case .toRight:
-            topLabel.alpha = 0.0
-            rightLabel.alpha = alpha
-            leftLabel.alpha = 0.0
-            
-        case .toLeft:
-            topLabel.alpha = 0.0
-            rightLabel.alpha = 0.0
-            leftLabel.alpha = alpha
-            
-        case .backToIdentity, .none:
-            setActionLabelsToBeTransparent()
-        }
+    public func cardViewViewModel(_ vm: CardViewViewModel, didUpdateActionHint state: CardViewViewModel.ActionHintState) {
+        leftLabel.alpha  = state.leftAlpha
+        rightLabel.alpha = state.rightAlpha
+        topLabel.alpha   = state.topAlpha
     }
     
     public func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didInitImages images: [UIImage]) {

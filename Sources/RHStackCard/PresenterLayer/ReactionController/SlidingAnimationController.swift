@@ -136,7 +136,6 @@ extension SlidingAnimationController {
             UIView.animate(withDuration: 0.75, delay: 0, usingSpringWithDamping: 0.6, initialSpringVelocity: 0.1, options: .curveEaseInOut) {
                 self.cardView?.transform = .identity
             } completion: { _ in
-                guard let cardView = self.cardView else { return }
                 self.delegate?.slidingAnimationController(self, cardViewDidPerformSwipeActionAnimation: direction)
             }
         case .none:

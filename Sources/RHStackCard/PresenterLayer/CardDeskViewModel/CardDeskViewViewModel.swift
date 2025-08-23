@@ -159,7 +159,7 @@ extension CardDeskViewViewModel: SlidingAnimationControllerDataSource {
 extension CardDeskViewViewModel: SlidingAnimationControllerDelegate {
     func slidingAnimationController(_ slidingAnimationController: SlidingAnimationController, didSlideChanged direction: SlidingDirection, withTransaltion translation: CGPoint) {
         let cardView = slidingAnimationController.cardView
-        cardView?.viewModel.didSlideCahnged(with: direction, withTransaltion: translation)
+        cardView?.viewModel.didSlideChanged(direction: direction, translation: translation)
         
         scaleSizeManager.presentingCardViews = cardViews
         scaleSizeManager.paningCurrentPresentingCardView(withTranslation: translation)
