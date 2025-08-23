@@ -25,6 +25,9 @@ open class CardView: UIView {
         super.init(frame: .zero)
         backgroundColor = .white
         viewModel.delegate = self
+        
+        let tap = UITapGestureRecognizer(target: self, action: #selector(handlePhotoTap(_:)))
+        addGestureRecognizer(tap)
     }
     
     required public init?(coder: NSCoder) {
@@ -237,5 +240,11 @@ fileprivate extension CardView {
         view.clipsToBounds = true
         view.alpha = 0.0
         return view
+    }
+    
+    @objc private func handlePhotoTap(_ gesture: UITapGestureRecognizer) {
+        let x = gesture.location(in: self).x
+        let shouldAdvanceNextPhoto = x > bounds.midX
+        setCurrentPhotoIndex(shouldAdvanceNextPhoto: shouldAdvanceNextPhoto)
     }
 }

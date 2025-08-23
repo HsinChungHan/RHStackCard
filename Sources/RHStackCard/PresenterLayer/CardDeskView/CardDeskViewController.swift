@@ -41,13 +41,10 @@ public class CardDeskViewController: UIViewController {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    lazy var tapGestureRecognizer = makeTapGestureRecognizer()
-    
+        
     public override func viewDidLoad() {
         super.viewDidLoad()
         registerCardViewType()
-        view.addGestureRecognizer(tapGestureRecognizer)
         view.addGestureRecognizer(panGestureRecognizer)
         viewModel.addNewCards(with: _cards)
         setupLayout()
@@ -83,17 +80,6 @@ public class CardDeskViewController: UIViewController {
 
 // MARK: - Factory Methods
 fileprivate extension CardDeskViewController {
-    func makeTapGestureRecognizer() -> UITapGestureRecognizer {
-        let tapGetsure = UITapGestureRecognizer(target: self, action: #selector(handleTap(gesture:)))
-        return tapGetsure
-    }
-    
-    @objc func handleTap(gesture: UITapGestureRecognizer) {
-        let tapLocation = gesture.location(in: view)
-        let shouldAdvanceNextPhoto = tapLocation.x > view.frame.midX ? true : false
-        currentCardView?.setCurrentPhotoIndex(shouldAdvanceNextPhoto: shouldAdvanceNextPhoto)
-    }
-    
     func makeCardViewControlBar(with delegate: CardViewControlBarDelegate) -> CardViewControlBar {
         let bar = CardViewControlBar(buttonsShouldHaveInitialColor: false)
         bar.delegate = delegate
