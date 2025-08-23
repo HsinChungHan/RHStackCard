@@ -22,9 +22,9 @@ public class CardDeskViewController: UIViewController {
     private lazy var slidingEventObserver = SlidingEventObserver()
     private lazy var cardViewControlBar = makeCardViewControlBar(with: self)
     
-    var currentCardView: CardView? {
-        viewModel.currentCardView
-    }
+    private let hapticsPort = UIKitHapticsAdapter()
+    
+    var currentCardView: CardView? { viewModel.currentCardView }
 
     private var _cards: [Card] {
         guard let dataSource else { return [] }
@@ -151,13 +151,13 @@ extension CardDeskViewController: CardViewDelegate {
     public func cardView(_ cardView: CardView, didTapOutOfIndex direction: CardViewViewModel.OutOfIndexDirection) {
         switch direction {
         case .left:
-            ImpactFeedbackController.startImpactFeedback(with: .heavy)
+            hapticsPort.impact(.heavy, intensity: 1.0)
             vibrationAnimationController.doBriefVibration(angle: -5)
         case .right:
-            ImpactFeedbackController.startImpactFeedback(with: .heavy)
+            hapticsPort.impact(.heavy, intensity: 1.0)
             vibrationAnimationController.doBriefVibration(angle: 5)
         case .stillIncludeIndex:
-            ImpactFeedbackController.startImpactFeedback(with: .medium)
+            hapticsPort.impact(.medium, intensity: 1.0)
         }
     }
 }
