@@ -6,7 +6,7 @@
 //
 
 
-struct CardViewTypeManager {
+struct CardViewType {
     private static var types: [String: CardView.Type] = [:]
 
     static func register(withCardViewID cardViewID: String, cardViewType: CardView.Type) {

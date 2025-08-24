@@ -13,7 +13,7 @@ protocol CardViewsManagerUseCaseProtocol: AnyObject {
     func updateCardURLImages(with imageData: Data, at index: Int, for card: Card)
     
     var delegate: CardViewsManagerUseCaseDelegate? { get set }
-    var presentingCardViews: [CardView] { get set }
+    var presentingCardViews: [CardView] { get }
 }
 
 protocol CardViewsManagerUseCaseDelegate: AnyObject {
@@ -34,18 +34,18 @@ class CardViewsManagerUseCase: NSObject, CardViewsManagerUseCaseProtocol {
         }
     }
     
+    // MARK: - CardsRepository
     private lazy var cardsRepo = CardsRepository()
     private var cards: [any Card] { cardsRepo.cards }
     private var presentingCards: [any Card] { cardsRepo.presentingCards }
     private var popedCards: [any Card] { cardsRepo.popedCards }
     
+    // MARK: - CardViewPoolService
+    private lazy var cardViewPool = CardViewPoolService()
+    var presentingCardViews: [CardView] { cardViewPool.presentingCardViews }
+    
+    
     private let MAX_PRESENTATION_CARDS = 3
-    var presentingCardViews = [CardView]() {
-        didSet {
-            print("presentingCardViews")
-        }
-    }
-    private var cardViewsPool = [String: [CardView]]()
     
     weak var _delegate: CardViewsManagerUseCaseDelegate?
     var delegate: CardViewsManagerUseCaseDelegate? {
@@ -74,7 +74,7 @@ extension CardViewsManagerUseCase {
     }
     
     func addNewCards(with cards: [Card]) {
-        initCardViewsPool(with: cards)
+        cardViewPool.initCardViewsPool(with: cards)
         cardsRepo.addNewCards(with: cards)
         distributeCardViews()
         delegate?.cardViewsManager(self, didDistributeCardViews: presentingCardViews, whenAddNewCards: cards)
@@ -84,10 +84,7 @@ extension CardViewsManagerUseCase {
         let isNotGeneratedAllCards = !presentingCardViews.isEmpty && !presentingCards.isEmpty
         
         if isNotGeneratedAllCards {
-            let popedCardView = presentingCardViews.removeFirst()
-            let popedCardViewTypeName = popedCardView.card!.cardViewTypeName
-            cardViewsPool[popedCardViewTypeName]!.append(popedCardView)
-            popedCardView.reset()
+            cardViewPool.enqueCardView()
             cardsRepo.popPresentingCard()
             distributeCardViews()
         } else {
@@ -99,17 +96,6 @@ extension CardViewsManagerUseCase {
 // MARK: - Helpers
 
 private extension CardViewsManagerUseCase {
-    func initCardViewsPool(with cards: [Card]) {
-        var cardViewTypeIDs = Set<String>()
-        cards.forEach {
-            cardViewTypeIDs.insert($0.cardViewTypeName)
-        }
-        
-        for cardViewTypeID in cardViewTypeIDs {
-            cardViewsPool[cardViewTypeID] = (0...2).map { CardViewTypeManager.type(ofCardViewID: cardViewTypeID)!.init(uid: "\($0)") }
-        }
-    }
-    
     func distributeCardViews() {
         let isGeneratedAllCards = cards.isEmpty
         if isGeneratedAllCards {
@@ -117,14 +103,11 @@ private extension CardViewsManagerUseCase {
         }
         
         while !cards.isEmpty && presentingCardViews.count < MAX_PRESENTATION_CARDS {
-            // [repo]
-            let targetCard = cardsRepo.removeFirstCard()
-            let targetCardViewType = targetCard.cardViewTypeName
-            let targetCardView = cardViewsPool[targetCardViewType]!.removeFirst()
-            
-            setupCardView(with: targetCard, on: targetCardView)
-            presentingCardViews.append(targetCardView)
-            delegate?.cardViewsManager(self, didDistributeCardView: targetCardView, forSingleCard: targetCard)
+            let card = cardsRepo.removeFirstCard()
+            // [poolService] dequeCardView
+            var cardView = cardViewPool.dequeCardView(with: card.cardViewTypeName)
+            setupCardView(with: card, on: cardView)
+            delegate?.cardViewsManager(self, didDistributeCardView: cardView, forSingleCard: card)
         }
     }
     
