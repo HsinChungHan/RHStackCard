@@ -34,13 +34,18 @@ class CardViewsManagerUseCase: NSObject, CardViewsManagerUseCaseProtocol {
         }
     }
     
-    private let MAX_PRESENTATION_CARDS = 3
-    var presentingCardViews = [CardView]()
-    private var cardViewsPool = [String: [CardView]]()
+    private lazy var cardsRepo = CardsRepository()
+    private var cards: [any Card] { cardsRepo.cards }
+    private var presentingCards: [any Card] { cardsRepo.presentingCards }
+    private var popedCards: [any Card] { cardsRepo.popedCards }
     
-    private var cards = [any Card]()
-    private lazy var presentingCards = [any Card]()
-    private var popedCards = [any Card]()
+    private let MAX_PRESENTATION_CARDS = 3
+    var presentingCardViews = [CardView]() {
+        didSet {
+            print("presentingCardViews")
+        }
+    }
+    private var cardViewsPool = [String: [CardView]]()
     
     weak var _delegate: CardViewsManagerUseCaseDelegate?
     var delegate: CardViewsManagerUseCaseDelegate? {
@@ -70,7 +75,7 @@ extension CardViewsManagerUseCase {
     
     func addNewCards(with cards: [Card]) {
         initCardViewsPool(with: cards)
-        self.cards += cards
+        cardsRepo.addNewCards(with: cards)
         distributeCardViews()
         delegate?.cardViewsManager(self, didDistributeCardViews: presentingCardViews, whenAddNewCards: cards)
     }
@@ -83,8 +88,7 @@ extension CardViewsManagerUseCase {
             let popedCardViewTypeName = popedCardView.card!.cardViewTypeName
             cardViewsPool[popedCardViewTypeName]!.append(popedCardView)
             popedCardView.reset()
-            let popedCard = presentingCards.removeFirst()
-            popedCards.append(popedCard)
+            cardsRepo.popPresentingCard()
             distributeCardViews()
         } else {
             delegate?.cardViewsManager(self, didGenerateAllCards: true)
@@ -113,13 +117,13 @@ private extension CardViewsManagerUseCase {
         }
         
         while !cards.isEmpty && presentingCardViews.count < MAX_PRESENTATION_CARDS {
-            let targetCard = cards.removeFirst()
+            // [repo]
+            let targetCard = cardsRepo.removeFirstCard()
             let targetCardViewType = targetCard.cardViewTypeName
             let targetCardView = cardViewsPool[targetCardViewType]!.removeFirst()
             
             setupCardView(with: targetCard, on: targetCardView)
             presentingCardViews.append(targetCardView)
-            presentingCards.append(targetCard)
             delegate?.cardViewsManager(self, didDistributeCardView: targetCardView, forSingleCard: targetCard)
         }
     }
