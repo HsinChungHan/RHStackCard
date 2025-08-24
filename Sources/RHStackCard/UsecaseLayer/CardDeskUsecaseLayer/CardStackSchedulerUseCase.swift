@@ -21,10 +21,8 @@ protocol CardStackSchedulerUseCaseDelegate: AnyObject {
 }
 
 class CardStackSchedulerUseCase: NSObject, CardStackSchedulerUseCaseProtocol {
-    
-    
     // MARK: - CardsRepository
-    private lazy var cardsRepo = CardsRepository()
+    private let cardsRepo: CardsRepositoryProtocol
     private var cards: [any Card] { cardsRepo.cards }
     var presentingCards: [any Card] { cardsRepo.presentingCards }
     private var popedCards: [any Card] { cardsRepo.popedCards }
@@ -33,9 +31,10 @@ class CardStackSchedulerUseCase: NSObject, CardStackSchedulerUseCaseProtocol {
     
     weak var delegate: CardStackSchedulerUseCaseDelegate?
     
-    init(delegate: CardStackSchedulerUseCaseDelegate?=nil) {
-        super.init()
+    init(delegate: CardStackSchedulerUseCaseDelegate?=nil, cardsRepo: CardsRepositoryProtocol) {
         self.delegate = delegate
+        self.cardsRepo = cardsRepo
+        super.init()
     }
 }
 

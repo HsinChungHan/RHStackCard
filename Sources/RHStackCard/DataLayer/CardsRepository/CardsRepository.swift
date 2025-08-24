@@ -6,8 +6,18 @@
 //
 
 import Foundation
+protocol CardsRepositoryProtocol {
+    var cards: [any Card] { get }
+    var presentingCards: [any Card] { get }
+    var popedCards: [any Card] { get }
+    
+    func addNewCards(with cards: [Card])
+    func removeFirstCard() -> Card
+    func popPresentingCard() -> Card
+}
 
-class CardsRepository {
+
+class CardsRepository: CardsRepositoryProtocol {
     var cards = [any Card]()
     var presentingCards = [any Card]()
     var popedCards = [any Card]()

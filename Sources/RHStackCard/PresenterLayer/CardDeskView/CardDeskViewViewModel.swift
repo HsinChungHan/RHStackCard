@@ -21,7 +21,9 @@ protocol CardDeskViewViewModelDelegate: AnyObject {
 
 class CardDeskViewViewModel {
     weak var delegate: CardDeskViewViewModelDelegate?
-    private lazy var cardStackSchedulerUseCase: CardStackSchedulerUseCaseProtocol = CardStackSchedulerUseCase.init(delegate: self)
+    
+    private lazy var cardsRepo = CardsRepository()
+    private lazy var cardStackSchedulerUseCase: CardStackSchedulerUseCaseProtocol = CardStackSchedulerUseCase.init(delegate: self, cardsRepo: cardsRepo)
     
     private lazy var loadCardImagesUseCase: LoadCardImagesUseCaseProtocol = makeLoadCardImagesUseCase()
     
