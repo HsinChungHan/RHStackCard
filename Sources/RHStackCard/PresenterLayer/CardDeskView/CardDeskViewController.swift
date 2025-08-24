@@ -54,7 +54,7 @@ public class CardDeskViewController: UIViewController {
     }
     
     public func registerCardViewType(withCardViewID cardViewID: String, cardViewType: CardView.Type) {
-        CardViewTypeManager.register(withCardViewID: cardViewID, cardViewType: cardViewType)
+        CardViewType.register(withCardViewID: cardViewID, cardViewType: cardViewType)
     }
     
     private func registerCardViewType() {

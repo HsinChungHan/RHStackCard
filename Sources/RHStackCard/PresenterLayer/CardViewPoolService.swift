@@ -14,8 +14,8 @@ class CardViewPoolService {
     func initCardViewsPool(with cards: [Card]) {
         var cardViewTypeIDs = Set<String>()
         cards.forEach { cardViewTypeIDs.insert($0.cardViewTypeName) }
-        cardViewTypeIDs.map { typeID in
-            cardViewPool[typeID] = (0...2).map { CardViewType.type(ofCardViewID: typeID)!.init(uid: "\($0)") }
+        for viewTypeID in cardViewTypeIDs {
+            cardViewPool[viewTypeID] = (0...2).map { CardViewType.type(ofCardViewID: viewTypeID)!.init(uid: "\($0)") }
         }
     }
     
