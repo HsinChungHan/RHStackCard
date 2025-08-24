@@ -21,7 +21,7 @@ protocol CardDeskViewViewModelDelegate: AnyObject {
 
 class CardDeskViewViewModel {
     weak var delegate: CardDeskViewViewModelDelegate?
-    private lazy var cardViewsManager: CardViewsManagerUseCaseProtocol = CardViewsManagerUseCase.init(delegate: self)
+    private lazy var cardStackSchedulerUseCase: CardStackSchedulerUseCaseProtocol = CardStackSchedulerUseCase.init(delegate: self)
     
     private lazy var loadCardImagesUseCase: LoadCardImagesUseCaseProtocol = makeLoadCardImagesUseCase()
     
@@ -79,7 +79,7 @@ extension CardDeskViewViewModel {
 // MARK: - Private Helpers
 private extension CardDeskViewViewModel {
     // 只有需要用 URL 抓的圖片才會經由 ImageRepository 提供圖片
-    // 否則直接由 cardViewsManager 要求 cardView render asset 圖片
+    // 否則直接由 cardStackSchedulerUseCase 要求 cardView render asset 圖片
     func loadImages(with cards: [Card]) {
         cards.forEach { card in
             loadImage(with: card)
@@ -106,15 +106,15 @@ extension CardDeskViewViewModel {
     }
 }
 
-// MARK: - CardViewsManagerUseCaseDelegate
-extension CardDeskViewViewModel: CardViewsManagerUseCaseDelegate {
-    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, prepareDistributeCardViews cards: [Card]) {
+// MARK: - CardStackSchedulerUseCaseDelegate
+extension CardDeskViewViewModel: CardStackSchedulerUseCaseDelegate {
+    func cardStackSchedulerUseCase(_ cardStackSchedulerUseCase: CardStackSchedulerUseCase, prepareDistributeCardViews cards: [Card]) {
         loadImages(with: cards)
-        cardViewsManager.willUpdateCardRepo()
+        cardStackSchedulerUseCase.willUpdateCardRepo()
         delegate?.cardDeskViewViewModel(self, didDistributCardViewsForAddedCards: cardViewPool.presentingCardViews)
     }
     
-    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, prepareDistributeCardView card: Card) {
+    func cardStackSchedulerUseCase(_ cardStackSchedulerUseCase: CardStackSchedulerUseCase, prepareDistributeCardView card: Card) {
         var cardView = cardViewPool.dequeCardView(with: card.cardViewTypeName)
         setupCardView(with: card, on: cardView)
         loadImage(with: card)
@@ -122,7 +122,7 @@ extension CardDeskViewViewModel: CardViewsManagerUseCaseDelegate {
         delegate?.cardDeskViewViewModel(self, didDistributCardViewForSingleCard: cardView)
     }
     
-    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didGenerateAllCards: Bool) {
+    func cardStackSchedulerUseCase(_ cardStackSchedulerUseCase: CardStackSchedulerUseCase, didGenerateAllCards: Bool) {
         taskManager.reset()
         delegate?.cardDeskViewViewModel(self, didGenerateAllCards: true)
     }
@@ -164,22 +164,22 @@ extension CardDeskViewViewModel: SlidingAnimationControllerDelegate {
     }
 }
 
-// MARK: - Interact with CardViewsManagerUseCase
+// MARK: - Interact with CardStackSchedulerUseCase
 extension CardDeskViewViewModel {
     var cardViews: [CardView] { cardViewPool.presentingCardViews }
     
     func addNewCards(with cards: [Card]) {
         cardViewPool.initCardViewsPool(with: cards)
-        cardViewsManager.addNewCards(with: cards)
+        cardStackSchedulerUseCase.addNewCards(with: cards)
     }
     
     func popCardView() {
-        let isNotGeneratedAllCards = !cardViewPool.presentingCardViews.isEmpty && !cardViewsManager.presentingCards.isEmpty
+        let isNotGeneratedAllCards = !cardViewPool.presentingCardViews.isEmpty && !cardStackSchedulerUseCase.presentingCards.isEmpty
         if isNotGeneratedAllCards {
             cardViewPool.enqueCardView()
-            cardViewsManager.popCardView(presentingCardViewsCount: cardViewPool.presentingCardViews.count)
+            cardStackSchedulerUseCase.popCardView(presentingCardViewsCount: cardViewPool.presentingCardViews.count)
         } else {
-            cardViewsManager(cardViewsManager as! CardViewsManagerUseCase, didGenerateAllCards: true)
+            cardStackSchedulerUseCase(cardStackSchedulerUseCase as! CardStackSchedulerUseCase, didGenerateAllCards: true)
         }
     }
     
