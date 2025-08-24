@@ -13,15 +13,6 @@ struct CardViewType {
         types[cardViewID] = cardViewType
     }
 
-//    static func type(ofCardView cardView: CardView) -> CardView.Type? {
-//        let typeName = String(describing: Swift.type(of: cardView))
-//        return types[typeName]
-//    }
-//    
-//    static func type(ofTypeName typeName: String) -> CardView.Type? {
-//        return types[typeName]
-//    }
-    
     static func type(ofCardViewID cardViewID: String) -> CardView.Type? {
         return types[cardViewID]
     }
