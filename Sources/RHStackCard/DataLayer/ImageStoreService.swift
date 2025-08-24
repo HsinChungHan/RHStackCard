@@ -28,17 +28,15 @@ class ImageStoreService: ImageStoreServiceProtocol {
     
     func loadImage(with id: String, completion: @escaping (Result<Data, ImageStoreServiceError>) -> Void) {
         Task {
-            Task {
-                let fileName = "\(id)"
-                let result = await store.retrieve(with: fileName)
-                switch result {
-                case .empty:
-                    completion(.failure(.failureLoad))
-                case let .found(data):
-                    completion(.success(data))
-                default:
-                    completion(.failure(.failureLoad))
-                }
+            let fileName = "\(id)"
+            let result = await store.retrieve(with: fileName)
+            switch result {
+            case .empty:
+                completion(.failure(.failureLoad))
+            case let .found(data):
+                completion(.success(data))
+            default:
+                completion(.failure(.failureLoad))
             }
         }
     }
