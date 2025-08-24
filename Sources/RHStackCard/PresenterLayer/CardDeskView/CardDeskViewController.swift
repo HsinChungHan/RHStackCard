@@ -14,17 +14,12 @@ public protocol CardDeskViewControllerDataSource: AnyObject {
 
 public class CardDeskViewController: UIViewController {
     private lazy var vibrationAnimationController = VibrationAnimationController(dataSource: self, delegate: self)
-    
-    fileprivate lazy var viewModel = CardDeskViewViewModel(domainURL: dataSource?.domainURL)
-    
+    private lazy var viewModel = CardDeskViewViewModel(domainURL: dataSource?.domainURL)
     private lazy var panGestureRecognizer = makePanGestureRecognizer()
-    
     private lazy var slidingEventObserver = SlidingEventObserver()
     private lazy var cardViewControlBar = makeCardViewControlBar(with: self)
-    
     private let hapticsPort = UIKitHapticsAdapter()
-    
-    var currentCardView: CardView? { viewModel.currentCardView }
+    private var currentCardView: CardView? { viewModel.currentCardView }
 
     private var _cards: [Card] {
         guard let dataSource else { return [] }
@@ -41,7 +36,7 @@ public class CardDeskViewController: UIViewController {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-        
+    
     public override func viewDidLoad() {
         super.viewDidLoad()
         registerCardViewType()
@@ -52,34 +47,47 @@ public class CardDeskViewController: UIViewController {
         addObserver(with: slidingEventObserver)
         bindEvent()
     }
-    
-    public func registerCardViewType(withCardViewID cardViewID: String, cardViewType: CardView.Type) {
+}
+
+
+// MARK: - Public APIs
+public extension CardDeskViewController {
+    func registerCardViewType(withCardViewID cardViewID: String, cardViewType: CardView.Type) {
         CardViewType.register(withCardViewID: cardViewID, cardViewType: cardViewType)
     }
     
-    private func registerCardViewType() {
+    func addInSuperViewController(with superViewController: UIViewController) {
+        superViewController.addChild(self)
+        didMove(toParent: superViewController)
+    }
+    
+    func triggerTaskManager(slideAction: CardViewAction) {
+        viewModel.doCardViewControlBarEvent(slideAction: slideAction, cards: _cards)
+    }
+}
+
+// MARK: - Private helpers Methods
+private extension CardDeskViewController {
+    func registerCardViewType() {
         registerCardViewType(withCardViewID: "BasicCardView", cardViewType: BasicCardView.self)
     }
     
-    private func addObserver(with slidingEventObserver: SlidingEventObserver) {
+    func addObserver(with slidingEventObserver: SlidingEventObserver) {
         ObservableSlidingAnimation.shared.addObserver(slidingEventObserver)
     }
     
-    private func bindEvent() {
+    func bindEvent() {
         slidingEventObserver.didUpdateValue = { [weak self] event in
             guard let self else { return }
             self.cardViewControlBar.handle(slidingEvent: event)
         }
     }
     
-    private func setupLayout() {
+    func setupLayout() {
         view.addSubview(cardViewControlBar)
         cardViewControlBar.constraint(bottom: view.snp.bottom, centerX: view.snp.centerX, padding: .init(top: 0, left: 0, bottom: 24, right: 0))
     }
-}
-
-// MARK: - Factory Methods
-fileprivate extension CardDeskViewController {
+    
     func makeCardViewControlBar(with delegate: CardViewControlBarDelegate) -> CardViewControlBar {
         let bar = CardViewControlBar(buttonsShouldHaveInitialColor: false)
         bar.delegate = delegate
@@ -93,18 +101,6 @@ fileprivate extension CardDeskViewController {
     
     @objc func handlePan(gesture: UIPanGestureRecognizer){
         viewModel.handlePan(gesture: gesture)
-    }
-}
-
-// MARK: - Public Methods
-extension CardDeskViewController {
-    public func addInSuperViewController(with superViewController: UIViewController) {
-        superViewController.addChild(self)
-        didMove(toParent: superViewController)
-    }
-    
-    public func testTaskManager(slideAction: CardViewAction) {
-        viewModel.doCardViewControlBarEvent(slideAction: slideAction, cards: _cards)
     }
 }
 

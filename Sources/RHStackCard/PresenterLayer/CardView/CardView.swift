@@ -34,23 +34,23 @@ open class CardView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    fileprivate lazy var imageView = makePhotoImageView()
-    fileprivate lazy var informationLabel = makeInformationLabel()
-    fileprivate lazy var gradientLayer = makeGradientLayer()
-    fileprivate lazy var indexBarStackView = makeIndexBarStackView()
+    private lazy var imageView = makePhotoImageView()
+    private lazy var informationLabel = makeInformationLabel()
+    private lazy var gradientLayer = makeGradientLayer()
+    private lazy var indexBarStackView = makeIndexBarStackView()
     
-    fileprivate lazy var rightLabel = makeBehaviorLabel(text: CardViewAction.like.title, color: CardViewAction.like.color)
-    fileprivate lazy var topLabel = makeBehaviorLabel(text: CardViewAction.superLike.title, color: CardViewAction.superLike.color)
-    fileprivate lazy var leftLabel = makeBehaviorLabel(text: CardViewAction.nope.title, color: CardViewAction.nope.color)
+    private lazy var rightLabel = makeBehaviorLabel(text: CardViewAction.like.title, color: CardViewAction.like.color)
+    private lazy var topLabel = makeBehaviorLabel(text: CardViewAction.superLike.title, color: CardViewAction.superLike.color)
+    private lazy var leftLabel = makeBehaviorLabel(text: CardViewAction.nope.title, color: CardViewAction.nope.color)
     
     public lazy var uidLabel = makeUIDLabel()
     
-    override public func draw(_ rect: CGRect) {
+    open override func draw(_ rect: CGRect) {
         super.draw(rect)
         setupLayout()
     }
     
-    override public var description: String {
+    open override var description: String {
         return "\(super.description) \nuid: \(uid)"
     }
     
@@ -100,26 +100,26 @@ extension CardView {
 
 // MARK: - CardViewViewModelDelegate
 extension CardView: CardViewViewModelDelegate {
-    public func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didResetCardView: Bool) {
+    func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didResetCardView: Bool) {
         guard didResetCardView else { return }
         indexBarStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
     }
     
-    public func cardViewViewModel(_ vm: CardViewViewModel, didUpdateActionHint state: CardViewViewModel.ActionHintState) {
+    func cardViewViewModel(_ vm: CardViewViewModel, didUpdateActionHint state: CardViewViewModel.ActionHintState) {
         leftLabel.alpha  = state.leftAlpha
         rightLabel.alpha = state.rightAlpha
         topLabel.alpha   = state.topAlpha
     }
     
-    public func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didInitImages images: [UIImage]) {
+    func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didInitImages images: [UIImage]) {
         initIndexBar(with: images.count)
     }
     
-    public func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didTapOutOfIndex direction: CardViewViewModel.OutOfIndexDirection) {
+    func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didTapOutOfIndex direction: CardViewViewModel.OutOfIndexDirection) {
         delegate?.cardView(self, didTapOutOfIndex: direction)
     }
     
-    public func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didUpdateCurrentImage image: UIImage, withCurrentImageIndex index: Int) {
+    func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didUpdateCurrentImage image: UIImage, withCurrentImageIndex index: Int) {
         imageView.image = image
         updateIndexBar(with: index)
     }
@@ -168,7 +168,7 @@ private extension CardView {
 }
 
 // MARK: - Factory Methods
-fileprivate extension CardView {
+private extension CardView {
     enum Constant {
         enum Bar {
             static let selectedColor = Color.Neutral.v0

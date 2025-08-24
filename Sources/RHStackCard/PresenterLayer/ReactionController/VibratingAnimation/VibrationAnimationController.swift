@@ -7,10 +7,6 @@
 
 import UIKit
 
-protocol CardStackVibrationAnimating: AnyObject {
-    func doBriefVibration(angle: CGFloat)
-}
-
 protocol VibrationAnimationControllerDataSource: AnyObject {
     var targetView: UIView { get }
 }
@@ -19,10 +15,10 @@ protocol VibrationAnimationControllerDelegate: AnyObject {
     func vibrationAnimationController(_ vibrationAnimationController: VibrationAnimationController, didEndVibrationAnimation: Bool)
 }
 
-class VibrationAnimationController: CardStackVibrationAnimating {
-    let heavyGenerator = UIImpactFeedbackGenerator(style: .heavy)
-    let mediumGenerator = UIImpactFeedbackGenerator(style: .medium)
-    var tapAnimator: UIViewPropertyAnimator?
+final class VibrationAnimationController: CardStackVibrationAnimating {
+    private let heavyGenerator = UIImpactFeedbackGenerator(style: .heavy)
+    private let mediumGenerator = UIImpactFeedbackGenerator(style: .medium)
+    private var tapAnimator: UIViewPropertyAnimator?
     
     private var targetView: UIView {
         guard let dataSource else { fatalError() }
@@ -66,7 +62,7 @@ class VibrationAnimationController: CardStackVibrationAnimating {
     }
 }
 
-// MARK: Internal Methods
+// MARK: Internal APIs
 extension VibrationAnimationController {
     func doBriefVibration(angle: CGFloat) {
         guard

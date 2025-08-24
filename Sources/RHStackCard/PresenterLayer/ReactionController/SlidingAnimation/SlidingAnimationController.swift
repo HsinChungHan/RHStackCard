@@ -19,14 +19,9 @@ protocol SlidingAnimationControllerDelegate: AnyObject {
     func slidingAnimationController(_ slidingAnimationController: SlidingAnimationController, cardViewDidPerformSwipeActionAnimation direction: SlidingDirection)
 }
 
-class SlidingAnimationController {
-    var cardView: CardView? {
-        return dataSource?.cardView
-    }
-    
+final class SlidingAnimationController {
     private weak var dataSource: SlidingAnimationControllerDataSource?
     private weak var delegate: SlidingAnimationControllerDelegate?
-    
     
     init(dataSource: SlidingAnimationControllerDataSource, delegate: SlidingAnimationControllerDelegate? = nil) {
         self.dataSource = dataSource
@@ -36,6 +31,8 @@ class SlidingAnimationController {
 
 // MARK: - Internal APIs
 extension SlidingAnimationController: SlidingAnimating {
+    var cardView: CardView? {  dataSource?.cardView }
+    
     func handlePan(_ event: SlidingPanEvent) {
         switch event.phase {
         case .began:
@@ -72,7 +69,7 @@ extension SlidingAnimationController: SlidingAnimating {
 }
 
 // MARK: - Pan gesture
-fileprivate extension SlidingAnimationController {
+private extension SlidingAnimationController {
     func performSwipAnimation(swipeAway direction: SlidingDirection, translation: CGPoint, angle: CGFloat = 0, completionHandler: (() -> Void)? = nil) {
         CATransaction.setCompletionBlock {[weak self] in
             guard let self else { return }
@@ -152,7 +149,7 @@ extension SlidingAnimationController {
     }
 }
 
-public extension SlidingPanPhase {
+extension SlidingPanPhase {
     init(_ state: UIGestureRecognizer.State) {
         switch state {
         case .began:
@@ -171,7 +168,7 @@ public extension SlidingPanPhase {
     }
 }
 
-public extension SlidingPanEvent {
+extension SlidingPanEvent {
     init(gesture: UIPanGestureRecognizer, in view: UIView) {
         let t = gesture.translation(in: view)
         let v = gesture.velocity(in: view)

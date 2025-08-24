@@ -19,7 +19,7 @@ protocol CardDeskViewViewModelDelegate: AnyObject {
     func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, didReciveCardViewSlidingEvent event: ObservableEvents.CardViewEvents.SlidingEvent)
 }
 
-class CardDeskViewViewModel {
+final class CardDeskViewViewModel {
     weak var delegate: CardDeskViewViewModelDelegate?
     
     private lazy var cardsRepo = CardsRepository()
@@ -28,15 +28,15 @@ class CardDeskViewViewModel {
     private lazy var loadCardImagesUseCase: LoadCardImagesUseCaseProtocol = makeLoadCardImagesUseCase()
     
     let scaleSizeManager = ScaleSizeAnimationController()
-    let taskManager = TaskManager()
+    private let taskManager = TaskManager()
     private lazy var slidingAnimationController = SlidingAnimationController(dataSource: self, delegate: self)
     private lazy var slidingEventObserver = SlidingEventObserver()
     
     // MARK: - CardViewPoolService
     private lazy var cardViewPool = CardViewPoolService()
-    var presentingCardViews: [CardView] { cardViewPool.presentingCardViews }
+    private var presentingCardViews: [CardView] { cardViewPool.presentingCardViews }
 
-    let domainURL: URL?
+    private let domainURL: URL?
     init(domainURL: URL?) {
         self.domainURL = domainURL
         addObserver(with: slidingEventObserver)
@@ -44,13 +44,10 @@ class CardDeskViewViewModel {
     }
 }
 
-// MARK: - Computed Poroperties
+// MARK: - Internal AIPs
 extension CardDeskViewViewModel {
     var currentCardView: CardView? { cardViews.first }
-}
-
-// MARK: - Internal Methods
-extension CardDeskViewViewModel {
+    
     func handlePan(gesture: UIPanGestureRecognizer) {
         guard let gestureOnView = gesture.view else { return }
         slidingAnimationController.handlePan(.init(gesture: gesture, in: gestureOnView))

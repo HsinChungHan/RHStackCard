@@ -17,7 +17,7 @@ protocol CardsRepositoryProtocol {
 }
 
 
-class CardsRepository: CardsRepositoryProtocol {
+final class CardsRepository: CardsRepositoryProtocol {
     var cards = [any Card]()
     var presentingCards = [any Card]()
     var popedCards = [any Card]()

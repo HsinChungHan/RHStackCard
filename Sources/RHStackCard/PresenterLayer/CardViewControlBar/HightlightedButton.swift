@@ -7,9 +7,9 @@
 
 import UIKit
 
-class HightlightedButton: UIButton {
-    let hightlightedColor: UIColor
-    let normalColor: UIColor
+final class HightlightedButton: UIButton {
+    private let hightlightedColor: UIColor
+    private let normalColor: UIColor
     
     override var isHighlighted: Bool {
         didSet {
@@ -31,7 +31,10 @@ class HightlightedButton: UIButton {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+}
+
+// MARK: - Internal APIs
+extension HightlightedButton {
     func setSizeAnimation(scaleX: CGFloat, duration: TimeInterval = 0.1) {
         UIView.animate(withDuration: duration, delay: 0, options: [.curveEaseInOut], animations: {
             let sizeTransformation = CGAffineTransform(scaleX: scaleX, y: scaleX)

@@ -7,48 +7,50 @@
 
 import Foundation
 
-public protocol CardViewControlBarViewModelDelegate: AnyObject {
+protocol CardViewControlBarViewModelDelegate: AnyObject {
     func controlBarVM(_ vm: CardViewControlBarViewModel, didUpdate state: CardViewControlBarViewModel.State)
     func controlBarVM(_ vm: CardViewControlBarViewModel, didSetControlsEnabled enabled: Bool)
 }
 
-public final class CardViewControlBarViewModel {
-
-    public struct State {
-        public var alpha: [CardViewAction: CGFloat]   // 0...1
-        public var scale: [CardViewAction: CGFloat]   // 1...2(*1 to *2)
-
-        public static let hidden: State = .init(
+final class CardViewControlBarViewModel {
+    struct State {
+        var alpha: [CardViewAction: CGFloat]   // 0...1
+        var scale: [CardViewAction: CGFloat]   // 1...2(*1 to *2)
+        
+        static let hidden: State = .init(
             alpha: [.nope: 0, .like: 0, .superLike: 0],
             scale: [.nope: 1, .like: 1, .superLike: 1]
         )
     }
-
-    public weak var delegate: CardViewControlBarViewModelDelegate?
-
-    public var controlsEnabled: Bool = true {
+    
+    weak var delegate: CardViewControlBarViewModelDelegate?
+    
+    var controlsEnabled: Bool = true {
         didSet { delegate?.controlBarVM(self, didSetControlsEnabled: controlsEnabled) }
     }
+}
 
-    public func handle(slidingEvent: ObservableEvents.CardViewEvents.SlidingEvent) {
+// MARK: - Internal APIs
+extension CardViewControlBarViewModel {
+    func handle(slidingEvent: ObservableEvents.CardViewEvents.SlidingEvent) {
         guard let action = slidingEvent.action else {
             delegate?.controlBarVM(self, didUpdate: .hidden)
             return
         }
-
+        
         // it's not sliding → reset
         if slidingEvent.status != .sliding {
             delegate?.controlBarVM(self, didUpdate: .hidden)
             return
         }
-
+        
         let tx = slidingEvent.translation.x
         let ty = slidingEvent.translation.y
-
+        
         // calculate alpha（0...1）and scale（1...2）
         func clamp(_ v: CGFloat, _ lo: CGFloat, _ hi: CGFloat) -> CGFloat { max(lo, min(hi, v)) }
         var alpha: CGFloat = 0
-
+        
         switch action {
         case .superLike:
             alpha = (-ty - abs(tx) * 1) / 100
@@ -61,7 +63,7 @@ public final class CardViewControlBarViewModel {
         }
         alpha = clamp(alpha, 0, 1)
         let factor = clamp(1 + alpha, 1, 2)
-
+        
         // reset
         var next = State.hidden
         switch action {
@@ -77,11 +79,11 @@ public final class CardViewControlBarViewModel {
         default:
             break
         }
-
+        
         delegate?.controlBarVM(self, didUpdate: next)
     }
-
-    public func resetVisual() {
+    
+    func resetVisual() {
         delegate?.controlBarVM(self, didUpdate: .hidden)
     }
 }

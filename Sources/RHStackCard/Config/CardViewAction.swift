@@ -10,10 +10,9 @@ import RHUIComponent
 import UIKit
 
 public enum CardViewAction: CaseIterable {
-    
     case rewind, nope, superLike, like, refresh
     
-    var iconName: String {
+    public var iconName: String {
         switch self {
         case .rewind: return "rewind"
         case .superLike: return "superLike"
@@ -23,7 +22,7 @@ public enum CardViewAction: CaseIterable {
         }
     }
     
-    var title: String {
+    public var title: String {
         switch self {
         case .superLike: return "Super\nLike"
         case .like: return "Like"
@@ -33,7 +32,7 @@ public enum CardViewAction: CaseIterable {
         }
     }
     
-    var color: UIColor {
+    public var color: UIColor {
         switch self {
         case .superLike: return Color.Yellow.v500
         case .like: return Color.Green.v500
@@ -43,7 +42,7 @@ public enum CardViewAction: CaseIterable {
         }
     }
     
-    static func getAction(by cardViewDirection: SlidingDirection) -> Self? {
+    public static func getAction(by cardViewDirection: SlidingDirection) -> Self? {
         switch cardViewDirection {
         case .toLeft:
             return .nope

@@ -6,3 +6,6 @@
 //
 
 import Foundation
+protocol CardStackVibrationAnimating: AnyObject {
+    func doBriefVibration(angle: CGFloat)
+}

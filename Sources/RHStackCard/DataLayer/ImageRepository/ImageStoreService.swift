@@ -21,11 +21,13 @@ protocol ImageStoreServiceProtocol {
     func deleteImage(with id: String, completion: @escaping (Result<Void, ImageStoreServiceError>) -> Void)
 }
 
-class ImageStoreService: ImageStoreServiceProtocol {
-    let factory = RHCacheStoreAPIImplementationFactory()
-    
-    lazy var store = factory.makeActorCodableImageDataStore(with: imageStoreURL)
-    
+final class ImageStoreService: ImageStoreServiceProtocol {
+    private let factory = RHCacheStoreAPIImplementationFactory()
+    private lazy var store = factory.makeActorCodableImageDataStore(with: imageStoreURL)
+}
+
+// MARK: - Internal APIs
+extension ImageStoreService {
     func loadImage(with id: String, completion: @escaping (Result<Data, ImageStoreServiceError>) -> Void) {
         Task {
             let fileName = "\(id)"
@@ -66,7 +68,8 @@ class ImageStoreService: ImageStoreServiceProtocol {
     }
 }
 
-extension ImageStoreService {
+// MARK: - Private helpers
+private extension ImageStoreService {
     var imageStoreURL: URL {
         FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
     }

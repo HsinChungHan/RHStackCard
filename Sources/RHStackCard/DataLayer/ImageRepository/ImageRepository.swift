@@ -16,23 +16,19 @@ protocol ImageRepositoryProtocol {
     func loadImage(with fullUrl: String, completion: @escaping (Result<Data, ImageRepositoryError>) -> Void)
 }
 
-class ImageRepository: ImageRepositoryProtocol {
-    let imageNetworkService: ImageNetworkServiceProtocol
-    let imageStoreService: ImageStoreServiceProtocol
+final class ImageRepository: ImageRepositoryProtocol {
+    private let imageNetworkService: ImageNetworkServiceProtocol
+    private let imageStoreService: ImageStoreServiceProtocol
     init(
         imageNetworkService: ImageNetworkServiceProtocol,
         imageStoreService: ImageStoreServiceProtocol) {
         self.imageNetworkService = imageNetworkService
         self.imageStoreService = imageStoreService
     }
-    
-    fileprivate func extractPath(from fullUrl: String) -> String? {
-        guard let url = URL(string: fullUrl) else {
-            return nil
-        }
-        return url.path
-    }
-    
+}
+
+// MARK: - Internal APIs
+extension ImageRepository {
     func loadImage(with fullUrl: String, completion: @escaping (Result<Data, ImageRepositoryError>) -> Void) {
         guard let path = extractPath(from: fullUrl) else { return }
         let imageID = path.replacingOccurrences(of: "/", with: "")
@@ -53,5 +49,15 @@ class ImageRepository: ImageRepositoryProtocol {
                 }
             }
         }
+    }
+}
+
+// MARK: - Private helpers
+extension ImageRepository {
+    private func extractPath(from fullUrl: String) -> String? {
+        guard let url = URL(string: fullUrl) else {
+            return nil
+        }
+        return url.path
     }
 }

@@ -20,7 +20,7 @@ protocol CardStackSchedulerUseCaseDelegate: AnyObject {
     func cardStackSchedulerUseCase(_ cardStackSchedulerUseCase: CardStackSchedulerUseCase, didGenerateAllCards: Bool)
 }
 
-class CardStackSchedulerUseCase: NSObject, CardStackSchedulerUseCaseProtocol {
+final class CardStackSchedulerUseCase: NSObject, CardStackSchedulerUseCaseProtocol {
     // MARK: - CardsRepository
     private let cardsRepo: CardsRepositoryProtocol
     private var cards: [any Card] { cardsRepo.cards }
@@ -29,7 +29,7 @@ class CardStackSchedulerUseCase: NSObject, CardStackSchedulerUseCaseProtocol {
     
     private let MAX_PRESENTATION_CARDS = 3
     
-    weak var delegate: CardStackSchedulerUseCaseDelegate?
+    private weak var delegate: CardStackSchedulerUseCaseDelegate?
     
     init(delegate: CardStackSchedulerUseCaseDelegate?=nil, cardsRepo: CardsRepositoryProtocol) {
         self.delegate = delegate
@@ -38,7 +38,7 @@ class CardStackSchedulerUseCase: NSObject, CardStackSchedulerUseCaseProtocol {
     }
 }
 
-// MARK: - Internal Methods
+// MARK: - Internal APIs
 extension CardStackSchedulerUseCase {
     func addNewCards(with cards: [Card]) {
         cardsRepo.addNewCards(with: cards)
@@ -49,10 +49,7 @@ extension CardStackSchedulerUseCase {
         cardsRepo.popPresentingCard()
         willUpdateCardRepo()
     }
-}
-
-// MARK: - Helpers
-extension CardStackSchedulerUseCase {
+    
     func willUpdateCardRepo() {
         let isGeneratedAllCards = cards.isEmpty
         if isGeneratedAllCards {

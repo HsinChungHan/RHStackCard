@@ -7,11 +7,11 @@
 
 import Foundation
 
-public enum HapticStyle {
+enum HapticStyle {
     case light, medium, heavy, rigid, soft
 }
 
-public protocol HapticsPort {
+protocol HapticsPort {
     func prepare(_ style: HapticStyle)
     func impact(_ style: HapticStyle, intensity: Float?)
 }

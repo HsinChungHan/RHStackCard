@@ -6,7 +6,8 @@
 //
 
 import Foundation
-public protocol CardStackScalingAnimating: AnyObject {
+
+protocol CardStackScalingAnimating: AnyObject {
     /// The card views currently being presented (index 0 = topmost).
     var presentingCardViews: [CardView] { get set }
 

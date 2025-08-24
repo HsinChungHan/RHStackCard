@@ -7,10 +7,13 @@
 
 import Foundation
 
-class CardViewPoolService {
-    var cardViewPool = [String: [CardView]]()
+final class CardViewPoolService {
+    private var cardViewPool = [String: [CardView]]()
     var presentingCardViews = [CardView]()
-    
+}
+
+// MARK: - Internal APIs
+extension CardViewPoolService {
     func initCardViewsPool(with cards: [Card]) {
         var cardViewTypeIDs = Set<String>()
         cards.forEach { cardViewTypeIDs.insert($0.cardViewTypeName) }

@@ -6,24 +6,25 @@
 //
 
 import Foundation
+
 /// Gesture phase independent of UIKit.
-public enum SlidingPanPhase: Equatable {
+enum SlidingPanPhase: Equatable {
     case began, changed, ended, cancelled, failed
 }
 
 /// Pan event payload passed into the animator.
-public struct SlidingPanEvent: Equatable {
-    public let phase: SlidingPanPhase
-    public let translation: CGPoint
-    public let velocity: CGPoint
-    public init(phase: SlidingPanPhase, translation: CGPoint, velocity: CGPoint) {
+struct SlidingPanEvent: Equatable {
+    let phase: SlidingPanPhase
+    let translation: CGPoint
+    let velocity: CGPoint
+    init(phase: SlidingPanPhase, translation: CGPoint, velocity: CGPoint) {
         self.phase = phase
         self.translation = translation
         self.velocity = velocity
     }
 }
 
-public protocol SlidingAnimating: AnyObject {
+protocol SlidingAnimating: AnyObject {
     func handlePan(_ event: SlidingPanEvent)
     func performAction(_ direction: SlidingDirection)
 }

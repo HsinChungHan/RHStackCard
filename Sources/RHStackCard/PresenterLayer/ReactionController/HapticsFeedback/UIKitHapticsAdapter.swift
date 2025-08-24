@@ -7,18 +7,20 @@
 
 import UIKit
 
-public final class UIKitHapticsAdapter: HapticsPort {
-    private var cache: [UIImpactFeedbackGenerator.FeedbackStyle: UIImpactFeedbackGenerator] = [:]
+final class UIKitHapticsAdapter: HapticsPort {
+    private var cache: [UIImpactFeedbackGenerator.FeedbackStyle: UIImpactFeedbackGenerator] = [:]  
+}
 
-    public init() {}
-
-    public func prepare(_ style: HapticStyle) {
+// MARK: - Internal APIs
+extension UIKitHapticsAdapter {
+    func prepare(_ style: HapticStyle) {
         runOnMain { [weak self] in
             _ = self?.generator(for: style).prepare()
         }
     }
 
-    public func impact(_ style: HapticStyle, intensity: Float?) {
+    
+    func impact(_ style: HapticStyle, intensity: Float?) {
         runOnMain { [weak self] in
             guard let self else { return }
             let gen = self.generator(for: style)
@@ -29,7 +31,9 @@ public final class UIKitHapticsAdapter: HapticsPort {
             }
         }
     }
+}
 
+private extension UIKitHapticsAdapter {
     // MARK: - Mapping
     private func generator(for style: HapticStyle) -> UIImpactFeedbackGenerator {
         let ui = uiStyle(from: style)

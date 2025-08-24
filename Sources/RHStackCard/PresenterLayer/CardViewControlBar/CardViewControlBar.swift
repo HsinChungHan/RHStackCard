@@ -12,20 +12,20 @@ public protocol CardViewControlBarDelegate: AnyObject {
 
 public final class CardViewControlBar: UIView {
     weak var delegate: CardViewControlBarDelegate?
-    public let viewModel = CardViewControlBarViewModel()
+    private let viewModel = CardViewControlBarViewModel()
 
-    lazy var controlButtons = makeControlButtons()
-    lazy var controlStackView = makeControlStackView()
+    private lazy var controlButtons = makeControlButtons()
+    private lazy var controlStackView = makeControlStackView()
 
-    var rewindButton: HightlightedButton { controlButtons[getButtonIndex(with: .rewind)] }
-    var nopeButton: HightlightedButton { controlButtons[getButtonIndex(with: .nope)] }
-    var superLikeButton: HightlightedButton { controlButtons[getButtonIndex(with: .superLike)] }
-    var likeButton: HightlightedButton { controlButtons[getButtonIndex(with: .like)] }
-    var refreshButton: HightlightedButton { controlButtons[getButtonIndex(with: .refresh)] }
+    private var rewindButton: HightlightedButton { controlButtons[getButtonIndex(with: .rewind)] }
+    private var nopeButton: HightlightedButton { controlButtons[getButtonIndex(with: .nope)] }
+    private var superLikeButton: HightlightedButton { controlButtons[getButtonIndex(with: .superLike)] }
+    private var likeButton: HightlightedButton { controlButtons[getButtonIndex(with: .like)] }
+    private var refreshButton: HightlightedButton { controlButtons[getButtonIndex(with: .refresh)] }
 
-    let buttonsShouldHaveInitialColor: Bool
+    private let buttonsShouldHaveInitialColor: Bool
 
-    public init(buttonsShouldHaveInitialColor: Bool) {
+    init(buttonsShouldHaveInitialColor: Bool) {
         self.buttonsShouldHaveInitialColor = buttonsShouldHaveInitialColor
         super.init(frame: .zero)
         viewModel.delegate = self
@@ -36,9 +36,9 @@ public final class CardViewControlBar: UIView {
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 }
 
-// MARK: - Internal API (driven by external calls or user gestures)
+// MARK: - Internal APIs (driven by external calls or user gestures)
 extension CardViewControlBar {
-    public func handle(slidingEvent: ObservableEvents.CardViewEvents.SlidingEvent) {
+    func handle(slidingEvent: ObservableEvents.CardViewEvents.SlidingEvent) {
         viewModel.handle(slidingEvent: slidingEvent)
     }
     
@@ -47,7 +47,7 @@ extension CardViewControlBar {
      temporarily lock the UI during animations,
      while sending network requests, to prevent double-taps, or when the card stack is empty.
      */
-    public func setControlsEnabled(_ enabled: Bool) {
+    func setControlsEnabled(_ enabled: Bool) {
         viewModel.controlsEnabled = enabled
     }
 }
@@ -162,11 +162,11 @@ private extension CardViewControlBar {
 
 // MARK: - CardViewControlBarViewModelDelegate
 extension CardViewControlBar: CardViewControlBarViewModelDelegate {
-    public func controlBarVM(_ vm: CardViewControlBarViewModel, didUpdate state: CardViewControlBarViewModel.State) {
+    func controlBarVM(_ vm: CardViewControlBarViewModel, didUpdate state: CardViewControlBarViewModel.State) {
         apply(state: state)
     }
 
-    public func controlBarVM(_ vm: CardViewControlBarViewModel, didSetControlsEnabled enabled: Bool) {
+    func controlBarVM(_ vm: CardViewControlBarViewModel, didSetControlsEnabled enabled: Bool) {
         controlButtons.forEach { $0.isEnabled = enabled }
     }
 }

@@ -11,10 +11,10 @@ protocol LoadCardImagesUseCaseProtocol {
     func loadCardImages(with card: Card, completion: @escaping (Result<(Int, Data), Error>) -> Void)
 }
 
-class LoadCardImagesUseCase: LoadCardImagesUseCaseProtocol {
-    lazy var loadImageCurrencyQueue = makeLoadImageCurrencyQueue()
+final class LoadCardImagesUseCase: LoadCardImagesUseCaseProtocol {
+    private lazy var loadImageCurrencyQueue = makeLoadImageCurrencyQueue()
     
-    let imageRepository: ImageRepositoryProtocol
+    private let imageRepository: ImageRepositoryProtocol
     init(imageRepository: ImageRepositoryProtocol) {
         self.imageRepository = imageRepository
     }
