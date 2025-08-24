@@ -29,6 +29,10 @@ class CardDeskViewViewModel {
     let taskManager = TaskManager()
     private lazy var slidingAnimationController = SlidingAnimationController(dataSource: self, delegate: self)
     private lazy var slidingEventObserver = SlidingEventObserver()
+    
+    // MARK: - CardViewPoolService
+    private lazy var cardViewPool = CardViewPoolService()
+    var presentingCardViews: [CardView] { cardViewPool.presentingCardViews }
 
     let domainURL: URL?
     init(domainURL: URL?) {
@@ -40,25 +44,11 @@ class CardDeskViewViewModel {
 
 // MARK: - Computed Poroperties
 extension CardDeskViewViewModel {
-    var cardViews: [CardView] {
-        cardViewsManager.presentingCardViews
-    }
-    
-    var currentCardView: CardView? {
-        cardViews.first
-    }
+    var currentCardView: CardView? { cardViews.first }
 }
 
 // MARK: - Internal Methods
 extension CardDeskViewViewModel {
-    func addNewCards(with cards: [Card]) {
-        cardViewsManager.addNewCards(with: cards)
-    }
-    
-    func popCardView() {
-        cardViewsManager.popCardView()
-    }
-    
     func handlePan(gesture: UIPanGestureRecognizer) {
         guard let gestureOnView = gesture.view else { return }
         slidingAnimationController.handlePan(.init(gesture: gesture, in: gestureOnView))
@@ -96,20 +86,6 @@ private extension CardDeskViewViewModel {
         }
     }
     
-    func loadImage<T: Card>(with card: T) {
-        guard !card.imageURLs.isEmpty else { return }
-        
-        loadCardImagesUseCase.loadCardImages(with: card) { [weak self] result in
-            guard let self else { return }
-            switch result {
-            case let .success((imageIndex, imageData)):
-                self.cardViewsManager.updateCardURLImages(with: imageData, at: imageIndex, for: card)
-            case .failure(_):
-                return
-            }
-        }
-    }
-    
     private func addObserver(with slidingEventObserver: SlidingEventObserver) {
         ObservableSlidingAnimation.shared.addObserver(slidingEventObserver)
     }
@@ -132,15 +108,18 @@ extension CardDeskViewViewModel {
 
 // MARK: - CardViewsManagerUseCaseDelegate
 extension CardDeskViewViewModel: CardViewsManagerUseCaseDelegate {
-    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didDistributeCardView cardView: CardView, forSingleCard card: Card) {
+    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, prepareDistributeCardViews cards: [Card]) {
+        loadImages(with: cards)
+        cardViewsManager.willUpdateCardRepo()
+        delegate?.cardDeskViewViewModel(self, didDistributCardViewsForAddedCards: cardViewPool.presentingCardViews)
+    }
+    
+    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, prepareDistributeCardView card: Card) {
+        var cardView = cardViewPool.dequeCardView(with: card.cardViewTypeName)
+        setupCardView(with: card, on: cardView)
         loadImage(with: card)
         taskManager.markCurrentTaskAsFinished()
         delegate?.cardDeskViewViewModel(self, didDistributCardViewForSingleCard: cardView)
-    }
-    
-    func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didDistributeCardViews presentingCardViews: [CardView], whenAddNewCards cards: [Card]) {
-        loadImages(with: cards)
-        delegate?.cardDeskViewViewModel(self, didDistributCardViewsForAddedCards: cardViews)
     }
     
     func cardViewsManager(_ cardViewsManager: CardViewsManagerUseCase, didGenerateAllCards: Bool) {
@@ -151,9 +130,7 @@ extension CardDeskViewViewModel: CardViewsManagerUseCaseDelegate {
 
 // MARK: - SlidingAnimationControllerDataSource
 extension CardDeskViewViewModel: SlidingAnimationControllerDataSource {
-    var cardView: CardView? {
-        currentCardView
-    }
+    var cardView: CardView? { currentCardView }
 }
 
 // MARK: - SlidingAnimationControllerDelegate
@@ -184,5 +161,61 @@ extension CardDeskViewViewModel: SlidingAnimationControllerDelegate {
         
         scaleSizeManager.presentingCardViews = cardViews
         scaleSizeManager.scaleCurrentPresentCardView()
+    }
+}
+
+// MARK: - Interact with CardViewsManagerUseCase
+extension CardDeskViewViewModel {
+    var cardViews: [CardView] { cardViewPool.presentingCardViews }
+    
+    func addNewCards(with cards: [Card]) {
+        cardViewPool.initCardViewsPool(with: cards)
+        cardViewsManager.addNewCards(with: cards)
+    }
+    
+    func popCardView() {
+        let isNotGeneratedAllCards = !cardViewPool.presentingCardViews.isEmpty && !cardViewsManager.presentingCards.isEmpty
+        if isNotGeneratedAllCards {
+            cardViewPool.enqueCardView()
+            cardViewsManager.popCardView(presentingCardViewsCount: cardViewPool.presentingCardViews.count)
+        } else {
+            cardViewsManager(cardViewsManager as! CardViewsManagerUseCase, didGenerateAllCards: true)
+        }
+    }
+    
+    func loadImage<T: Card>(with card: T) {
+        guard !card.imageURLs.isEmpty else { return }
+        
+        loadCardImagesUseCase.loadCardImages(with: card) { [weak self] result in
+            guard let self else { return }
+            switch result {
+            case let .success((imageIndex, imageData)):
+                self.cardViewPool.presentingCardViews.forEach {
+                    if $0.card?.uid == card.uid {
+                        $0.updateCardImage(with: imageData, at: imageIndex)
+                    }
+                }
+            case .failure(_):
+                return
+            }
+        }
+    }
+    
+    private enum CardImageSourceType {
+        case fromAsset
+        case fromURL
+        
+        static func getType<T: Card>(with card: T) -> Self {
+            return card.imageNames.isEmpty ? .fromURL : .fromAsset
+        }
+    }
+    
+    func setupCardView(with card: Card, on cardView: CardView) {
+        switch CardImageSourceType.getType(with: card) {
+        case .fromAsset:
+            cardView.setupImageNamesCard(with: card)
+        case .fromURL:
+            cardView.setupImageURLsCard(with: card)
+        }
     }
 }
