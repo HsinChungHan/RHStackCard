@@ -27,7 +27,7 @@ public class CardDeskViewController: UIViewController {
     private let hapticsPort = UIKitHapticsAdapter()
     private var currentCardView: CardView? { viewModel.currentCardView }
     
-    weak var delegate: CardDeskViewControllerDelegate?
+    public weak var delegate: CardDeskViewControllerDelegate?
 
     private var _cards: [Card] {
         guard let dataSource else { return [] }

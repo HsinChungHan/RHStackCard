@@ -15,7 +15,7 @@ protocol CardViewViewModelDelegate: AnyObject {
     func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didUpdateActionHint state: CardViewViewModel.ActionHintState)
 }
 
-open class CardViewViewModel {
+public class CardViewViewModel {
     struct ActionHintState {
         public var leftAlpha: CGFloat
         public var rightAlpha: CGFloat

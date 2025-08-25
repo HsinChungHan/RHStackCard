@@ -13,7 +13,7 @@ public enum SlidingDirection {
     case backToIdentity
     case none
     
-    public enum Constant {
+    enum Constant {
         enum Slide {
             static let xThrehold: CGFloat = 80
             static let yThrehold: CGFloat = 140 // superLike 需要的 threhold 比較大

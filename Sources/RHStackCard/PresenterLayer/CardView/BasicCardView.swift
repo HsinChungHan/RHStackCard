@@ -6,8 +6,8 @@
 //
 
 import Foundation
-open class BasicCardView: CardView {
-    open override func setupLayout() {
+class BasicCardView: CardView {
+    override func setupLayout() {
         super.setupLayout()
         uidLabel.removeFromSuperview()
     }

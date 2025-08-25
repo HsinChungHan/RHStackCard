@@ -13,12 +13,11 @@ public protocol CardViewDelegate: AnyObject {
 }
 
 open class CardView: UIView {
-    weak var delegate: CardViewDelegate?
-        
+    public weak var delegate: CardViewDelegate?
     public var card: (any Card)? { viewModel.card }
-    
     public let uid: String
-    public let viewModel = CardViewViewModel()
+    
+    let viewModel = CardViewViewModel()
 
     public required init(uid: String) {
         self.uid = uid

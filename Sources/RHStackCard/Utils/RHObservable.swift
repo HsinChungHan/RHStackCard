@@ -9,7 +9,7 @@ import Foundation
 
 public class WeakWrapper<T> {
     private weak var _value: AnyObject?
-    var value: T? {
+    public var value: T? {
         get {
             return _value as? T
         }
