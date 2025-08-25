@@ -10,7 +10,7 @@ import UIKit
 public protocol CardDeskViewControllerDelegate: AnyObject {
     func cardDeskViewController(_ cardDeskVC: CardDeskViewController, didReciveCardViewSlidingEvent event: ObservableEvents.CardViewEvents.SlidingEvent)
     func cardDeskViewController(_ cardDeskVC: CardDeskViewController, willPerformCardViewAction direction: SlidingDirection)
-    func cardDeskViewController(_ cardDeskVC: CardDeskViewController, didPerformCardViewAction: SlidingDirection)
+    func cardDeskViewController(_ cardDeskVC: CardDeskViewController, didPerformCardViewAction direction: SlidingDirection)
 }
 
 public protocol CardDeskViewControllerDataSource: AnyObject {
