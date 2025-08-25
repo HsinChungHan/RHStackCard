@@ -14,7 +14,7 @@ protocol CardDeskViewViewModelDelegate: AnyObject {
     func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, didGenerateAllCards: Bool)
     
     func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, willPerformCardViewAction direction: SlidingDirection)
-    func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, didPerformCardViewAction: SlidingDirection)
+    func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, didPerformCardViewAction direction: SlidingDirection)
     
     func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, didReciveCardViewSlidingEvent event: ObservableEvents.CardViewEvents.SlidingEvent)
 }

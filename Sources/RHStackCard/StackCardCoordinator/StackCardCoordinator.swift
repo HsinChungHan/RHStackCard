@@ -10,9 +10,10 @@ import UIKit
 public class StackCardCoordinator {
     public init() {}
     
-    public func makeCardDeskViewController(with dataSource: CardDeskViewControllerDataSource, in superViewController: UIViewController) -> CardDeskViewController {
+    public func makeCardDeskViewController(with dataSource: CardDeskViewControllerDataSource, in superViewController: UIViewController, assignDelegate delegate: CardDeskViewControllerDelegate) -> CardDeskViewController {
         let cardDeskViewController = CardDeskViewController.init(dataSource: dataSource)
         cardDeskViewController.addInSuperViewController(with: superViewController)
+        cardDeskViewController.delegate = delegate
         return cardDeskViewController
     }
     

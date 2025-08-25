@@ -7,6 +7,12 @@
 
 import UIKit
 
+public protocol CardDeskViewControllerDelegate: AnyObject {
+    func cardDeskViewController(_ cardDeskVC: CardDeskViewController, didReciveCardViewSlidingEvent event: ObservableEvents.CardViewEvents.SlidingEvent)
+    func cardDeskViewController(_ cardDeskVC: CardDeskViewController, willPerformCardViewAction direction: SlidingDirection)
+    func cardDeskViewController(_ cardDeskVC: CardDeskViewController, didPerformCardViewAction: SlidingDirection)
+}
+
 public protocol CardDeskViewControllerDataSource: AnyObject {
     var cards: [Card] { get }
     var domainURL: URL? { get }
@@ -20,6 +26,8 @@ public class CardDeskViewController: UIViewController {
     private lazy var cardViewControlBar = makeCardViewControlBar(with: self)
     private let hapticsPort = UIKitHapticsAdapter()
     private var currentCardView: CardView? { viewModel.currentCardView }
+    
+    weak var delegate: CardDeskViewControllerDelegate?
 
     private var _cards: [Card] {
         guard let dataSource else { return [] }
@@ -108,14 +116,18 @@ private extension CardDeskViewController {
 extension CardDeskViewController: CardDeskViewViewModelDelegate {
     func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, didReciveCardViewSlidingEvent event: ObservableEvents.CardViewEvents.SlidingEvent) {
         cardViewControlBar.handle(slidingEvent: event)
+        
+        delegate?.cardDeskViewController(self, didReciveCardViewSlidingEvent: event)
     }
     
     func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, willPerformCardViewAction direction: SlidingDirection) {
         view.isUserInteractionEnabled = false
+        delegate?.cardDeskViewController(self, willPerformCardViewAction: direction)
     }
     
-    func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, didPerformCardViewAction: SlidingDirection) {
+    func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, didPerformCardViewAction direction: SlidingDirection) {
         view.isUserInteractionEnabled = true
+        delegate?.cardDeskViewController(self, didPerformCardViewAction: direction)
     }
     
     func cardDeskViewViewModel(_ cardDeskViewViewModel: CardDeskViewViewModel, didDistributCardViewForSingleCard singleCardView: CardView) {
