@@ -26,13 +26,11 @@ public protocol RHStackCardInterfaceProtocol {
     /// - Parameters:
     ///   - dataSource: The data source that provides cards and domain URL
     ///   - delegate: The delegate to handle card events
-    ///   - parentViewController: The parent view controller to contain the card desk
     /// - Returns: The configured card desk view controller
     @discardableResult
     func setup(
         dataSource: CardDeskViewControllerDataSource,
-        delegate: CardDeskViewControllerDelegate,
-        in parentViewController: UIViewController
+        delegate: CardDeskViewControllerDelegate
     ) -> CardDeskViewController
     
     /// Setup the control bar for manual card actions

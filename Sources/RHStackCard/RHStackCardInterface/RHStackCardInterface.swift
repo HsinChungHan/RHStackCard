@@ -17,25 +17,19 @@ public class RHStackCardInterface: RHStackCardInterfaceProtocol {
     
     // MARK: - Private Properties
     private let coordinator: StackCardCoordinator
-    private weak var parentViewController: UIViewController?
     
     // MARK: - Initialization
     public init(coordinator: StackCardCoordinator = StackCardCoordinator()) {
         self.coordinator = coordinator
     }
     
-    // MARK: - RHStackCardInterfaceProtocol Implementation
     @discardableResult
     public func setup(
         dataSource: CardDeskViewControllerDataSource,
-        delegate: CardDeskViewControllerDelegate,
-        in parentViewController: UIViewController
+        delegate: CardDeskViewControllerDelegate
     ) -> CardDeskViewController {
-        self.parentViewController = parentViewController
-        
         let cardDeskVC = coordinator.makeCardDeskViewController(
             with: dataSource,
-            in: parentViewController,
             assignDelegate: delegate
         )
         
