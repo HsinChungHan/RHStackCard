@@ -14,7 +14,9 @@ public protocol CardViewDelegate: AnyObject {
 
 open class CardView: UIView {
     public weak var delegate: CardViewDelegate?
-    public var card: (any Card)? { viewModel.card }
+    public var card: (any Card)? {
+        return viewModel.card
+    }
     public let uid: String
     
     let viewModel = CardViewViewModel()
@@ -61,6 +63,12 @@ open class CardView: UIView {
     open func setupLayout() {
         setupViewLayout()
     }
+    
+    open func reset() {
+        viewModel.reset()
+    }
+    
+    open func setupCardViewInfo(withCard: Card) {}
 }
 
 // MARK: - Intenal APIs
@@ -76,14 +84,12 @@ extension CardView {
     
     func setupImageNamesCard<T: Card>(with card: T) {
         viewModel.setupImageNamesCard(with: card)
-    }
-    
-    func reset() {
-        viewModel.reset()
+        setupCardViewInfo(withCard: card)
     }
     
     func setupImageURLsCard<T: Card>(with card: T) {
         viewModel.setupImageURLsCard(with: card)
+        setupCardViewInfo(withCard: card)
     }
     
     func updateCardImage(with imageData: Data, at index: Int) {
@@ -102,6 +108,8 @@ extension CardView: CardViewViewModelDelegate {
     func cardViewViewModel(_ cardViewViewModel: CardViewViewModel, didResetCardView: Bool) {
         guard didResetCardView else { return }
         indexBarStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        informationLabel.text = nil
+        uidLabel.text = nil
     }
     
     func cardViewViewModel(_ vm: CardViewViewModel, didUpdateActionHint state: CardViewViewModel.ActionHintState) {
