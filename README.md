@@ -3,7 +3,8 @@
 </div>
 
 # RHStackCard
-RHStackCard is a highly customizable card stack view library built for iOS applications. It supports displaying various types of card views and can precisely monitor user swipe actions.
+RHStackCard is a powerful and highly customizable iOS card stack component built with Clean Architecture + MVVM pattern. Inspired by popular dating apps, RHStackCard provides smooth animations, memory optimization strategies, and extensive customization options.
+
 <table>
   <tr>
     <td>
@@ -19,28 +20,52 @@ RHStackCard is a highly customizable card stack view library built for iOS appli
 
 
 
-## Features
+## ✨ Features
 
-1. **Highly Customizable CardView and CardModel** - Easily create card views and data models that meet your requirements.
-2. **Diverse Card Views Presentation** - Supports various types of CardViews, fulfilling different interface display needs.
-3. **Swipe Behavior Monitoring** - Accurately captures users' swipe actions, including movement distance (translation), status, and direction.
-   1. Translation: The actual movement distance of the card, a CGPoint type (you can use this value to link to the behavior you define).
-   2. Status: Includes five statuses: sliding, endSlide, willDoSwipeAction, willDoBackToIdentity, didDoSwipeAction.
-   3. Direction: The direction the card will fly towards after endSlide, including toLeft, toRight, toTop, backToIdentity, none.
-4. **Task Management** - Converts each click on the control button into a task and sequentially executes them in the task manager.
-5. **Interactive Animation** - When swiping cards, it interacts with nope label, like label, super like label animations and control button animations on the Control Bar.
-6. **Card Fly-out Animation** - When swiped to a certain distance, the card will perform a fly-out-of-screen animation.
-7. **Supports Local and Remote Images** - Allows inputting local images or image URLs as the picture displayed on the CardView.
-8. **Flip and Vibration Feedback** - Performs a slight flip animation and vibration feedback when clicking on the furthest left or right pictures.
-9. **Index Bar** - Users can know which picture they are currently viewing through the Index Bar on the CardView.
+### 🏗️ Architecture Design
+- **Clean Architecture + MVVM**: Completely platform-agnostic Domain and Data layers
+- **Protocol-oriented design**: Easy to test and extend
+- **Dependency injection**: Low-coupled component design
+- **Swift Package Manager**: Fully encapsulated, use only through `RHStackCardInterface`
+
+### 🎨 Highly Customizable
+- **Custom Card Models**: Create your card data by conforming to `Card` protocol
+- **Custom Card Views**: Build custom UI components by inheriting from `CardView`
+- **Flexible Interface**: Simplified usage through `RHStackCardInterface`
+
+### 🚀 Memory Optimization
+- **CardViewPool Mechanism**: Similar to UITableViewCell recycling mechanism
+- **Maximum 3 Cards**: Maximum of 3 cards displayed simultaneously on screen
+- **Smart Recycling**: Pre-generate 3 CardViews for each Card Type for reuse
+- **Efficient Management**: Ensures memory usage efficiency and management
+
+### ⚡ Task Management System
+- **ActionTaskManager**: Prevents missed operations during rapid tapping
+- **Task Queue**: Queues user taps for sequential execution
+- **Animation Synchronization**: Executes next task after card animation completes
+- **No-miss Guarantee**: Ensures every user operation gets executed
+
+### 🎯 Rich Interactive Effects
+- **Sliding Gradient Effects**: Dynamic visual feedback for Like, Nope, SuperLike
+- **Haptic Feedback**: Vibration effects when tapping photos
+- **Index Indicator**: Real-time display of current photo page
+- **Flip Animation**: Card flip effect when reaching the last photo
+- **Scale Effects**: Dynamic scaling of background cards when swiping the first card
+
+### 🖼️ Image Caching System
+- **Auto Caching**: Intelligent image caching mechanism
+- **Cache First**: Priority check for local cache
+- **Network Fallback**: Auto download from server when no cache
+- **Auto Save**: Automatically save to local cache after download
+- **Custom Network Layer**: Self-developed network and cache frameworks integrated via SPM
 
 ## How To Use
 
 ### Basic Setup
 
 1. **Creating `CardDeskViewController`**:
-    - Created through the `CardViewComponentsFactory` of `RHStackCard`.
-    - Initialization requires a `dataSource` (to receive the imageURL's domain and cards model) and a `superViewController` (to handle presenting/pushing new ViewControllers).
+    - Created through the `RHStackCardInterface` of `RHStackCard`.
+    - Initialization requires a `dataSource` (to receive the imageURL's domain and cards model).
 
 ### Customizing CardView and Card
 
@@ -66,90 +91,53 @@ RHStackCard is a highly customizable card stack view library built for iOS appli
 ```swift
 import RHUIComponent
 import RHStackCard
+import SnapKit
 import UIKit
 
-class YourViewController: UIViewController {
-    let componentFactory = CardViewComponentsFactory()
-    lazy var cardDeskViewController = componentFactory.makeCardDeskViewController(with: self, in: self)
-    lazy var cardDeskView = cardDeskViewController.view!
-    lazy var slidingEventObserver: SlidingEventObserver? = componentFactory.makeSlidingEventObserver()
-    
-    let CUSTOM_CARD_VIEW_ID = "CustomCardViewID"
+class UserPageViewController: UIViewController {
+    private var cardDeskView: UIView { viewModel.cardDeskView }
+    private lazy var viewModel = makeUserPageViewMdoel()
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        // setup layout with cardDeskView...
-        registerCardView()
-        addObserver(with: slidingEventObserver)
-        bindEvent()
-    }
-    
-    //
-    func registerCardView() {
-        cardDeskViewController.registerCardViewType(withCardViewID: CUSTOM_CARD_VIEW_ID, cardViewType: CustomCardView.self)
+        setupDeskCardView()
+        viewModel.viewDidLoad()
     }
 }
 
-// MARK: - Helpers
-extension YourViewController {
-    func addObserver(with slidingEventObserver: SlidingEventObserver?) {
-        guard let slidingEventObserver else { return }
-        ObservableSlidingAnimation.shared.addObserver(slidingEventObserver)
+// MARK: - Private helpers
+extension UserPageViewController {
+    func makeUserPageViewMdoel() -> UserPageViewModel {
+        let repo = UserRepository()
+        let usecase = UserUsecase(repo: repo)
+        let viewModel = UserPageViewModel(usecase: usecase)
+        viewModel.delegate = self
+        return viewModel
     }
     
-    func bindEvent() {
-        slidingEventObserver?.didUpdateValue = { slidingEvent in
-            // Do something you want to do after receiving event...
-        }
-    }
-}
-
-// MARK: - Factory Methods
-extension YourViewController {
-    // Define the basic cards model
-    private func makeBasicCards() -> [BasicCard] {
-        let imageUrls = [
-            "https://img.onl/secZNX", "https://img.onl/ZH5sWF", "https://img.onl/svq3BT",
-            "https://img.onl/iZFN8N", "https://img.onl/0wemvT", "https://img.onl/7XELcY",
-            "https://img.onl/CPKg1e", "https://img.onl/1KYoX8", "https://img.onl/qR1lFr",
-            "https://img.onl/4DuU5A", "https://img.onl/buCSyk", "https://img.onl/YtXgXr",
-        ]
+    func setupDeskCardView() {
+        let cardDeskViewController = viewModel.setupDeskCardView()
+        addChild(cardDeskViewController)
+        view.addSubview(cardDeskViewController.view)
         
-        var cards: [BasicCard] = []
-        for i in stride(from: 0, to: imageUrls.count, by: 4) {
-            let cardURLs = imageUrls[i ..< min(i + 3, imageUrls.count)].compactMap { URL(string: $0) }
-            let card = BasicCard(uid: "\(i / 3)", imageURLs: cardURLs)
-            cards.append(card)
-        }
-        return cards
-    }
-    
-    // Define the custom cards model
-    private func makeCustomCards() -> [CustomCard] {
-        var cards: [CustomCard] = []
-        let totalImages = 191 // There are total 191 images
-
-        for start in stride(from: 2, through: totalImages, by: 5) {
-            let end = min(start + 4, totalImages)
-            let imageNames = (start...end).map { "AD\($0)" }
-            let cardName = "Vogue"
-            
-            // Set first imageName of each group be CustomCardView's uid
-            let uid = "AD\(start)"
-            
-            let card = CustomCard(uid: uid, imageNames: imageNames, cardViewTypeName: CUSTOM_CARD_VIEW_ID, cardName: cardName)
-            cards.append(card)
-        }
-        return cards
+        let cardWidth = UIScreen.main.bounds.width - 96
+        cardDeskViewController.view.constraint(
+            centerX: view.snp.centerX,
+            centerY: view.snp.centerY,
+            padding: .init(top: 32, left: 0, bottom: 0, right: 0),
+            size: .init(width: cardWidth, height: cardWidth * 16 / 9)
+        )
+        cardDeskViewController.didMove(toParent: self)
     }
 }
 
-// MARK: - CardDeskViewControllerDataSource
-extension YourViewController: CardDeskViewControllerDataSource {
-    var domainURL: URL? { .init(string: "https://img.onl/") }
+extension UserPageViewController: UserPageViewModelDelegate {
+    func userVM(_ vm: UserPageViewModel, didChangeState state: UserPageState) {
+        // Toggle the loading indicator based on state
+    }
     
-    var cards: [Card] {
-        // You can show multiple different cards together
-        makeCustomCards() + makeBasicCards()
+    func userVM(_ vm: UserPageViewModel, didUpdateCards cards: [UserCard]) {
+        vm.addUserCards()
     }
 }
 ```
