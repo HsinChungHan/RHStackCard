@@ -33,6 +33,9 @@ public protocol RHStackCardInterfaceProtocol {
         delegate: CardDeskViewControllerDelegate
     ) -> CardDeskViewController
     
+    /// Fetch the new card from the remote
+    func addNewCards()
+    
     /// Setup the control bar for manual card actions
     /// - Parameter delegate: The delegate to handle control bar events
     /// - Returns: The configured control bar

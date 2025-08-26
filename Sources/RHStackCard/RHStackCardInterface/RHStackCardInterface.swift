@@ -53,6 +53,10 @@ public class RHStackCardInterface: RHStackCardInterfaceProtocol {
     }
     
     public func createSlidingEventObserver() -> SlidingEventObserver {
-        return coordinator.makeSlidingEventObserver()
+        coordinator.makeSlidingEventObserver()
+    }
+    
+    public func addNewCards() {
+        cardDeskViewController?.addNewCards()
     }
 }

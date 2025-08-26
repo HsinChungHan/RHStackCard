@@ -49,11 +49,13 @@ public class CardDeskViewController: UIViewController {
         super.viewDidLoad()
         registerCardViewType()
         view.addGestureRecognizer(panGestureRecognizer)
-        viewModel.addNewCards(with: _cards)
         setupLayout()
-        
         addObserver(with: slidingEventObserver)
         bindEvent()
+    }
+    
+    public func addNewCards() {
+        viewModel.addNewCards(with: _cards)
     }
 }
 
@@ -62,11 +64,6 @@ public class CardDeskViewController: UIViewController {
 public extension CardDeskViewController {
     func registerCardViewType(withCardViewID cardViewID: String, cardViewType: CardView.Type) {
         CardViewType.register(withCardViewID: cardViewID, cardViewType: cardViewType)
-    }
-    
-    func addInSuperViewController(with superViewController: UIViewController) {
-        superViewController.addChild(self)
-        didMove(toParent: superViewController)
     }
     
     func triggerTaskManager(slideAction: CardViewAction) {
@@ -187,3 +184,4 @@ extension CardDeskViewController: CardViewControlBarDelegate {
         viewModel.doCardViewControlBarEvent(slideAction: slideAction, cards: _cards)
     }
 }
+ 
